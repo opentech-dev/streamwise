@@ -1,9 +1,9 @@
-import { Resources } from "@app/class/core/resources";
-import { ProcessSchema, SchemaType } from "@app/types";
+import { Resources } from "@app/class/helpers/resources";
+import { ProcessSchema, SchemaType } from "@app/types/types";
 import { Filter } from "./filter";
 import { Operation } from "./operation";
 import { DriverConfig } from "@app/types/connection";
-import { BullWrapper } from "../core/bull-wrapper";
+import { BullWrapper } from "../helpers/component-connection";
 import { Queue } from "bullmq";
 
 export class Process<T> extends BullWrapper {

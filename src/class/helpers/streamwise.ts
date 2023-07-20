@@ -1,9 +1,9 @@
-import { FilterFunction, OperationFunction, PipelineStarterFunction } from "@app/types";
+import { FilterFunction, OperationFunction, PipelineStarterFunction } from "@app/types/types";
 import { Resources } from "./resources";
 import { Process } from "../components/process";
 import { DriverConfig } from "@app/types/connection";
 import { RedisOptions } from "bullmq";
-import { ProcessSchema } from "@app/types";
+import { ProcessSchema } from "@app/types/types";
 
 
 export class Streamwise<T> {

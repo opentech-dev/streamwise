@@ -1,6 +1,6 @@
-import { Resources } from "@app/class/core/resources";
-import { KeyVal, OperationSchema, SchemaType, OperationFunction } from "@app/types";
-import { BullWrapper } from "../core/bull-wrapper";
+import { Resources } from "@app/class/helpers/resources";
+import { KeyVal, OperationSchema, SchemaType, OperationFunction } from "@app/types/types";
+import { BullWrapper } from "../helpers/component-connection";
 import { DriverConfig } from "@app/types/connection";
 import { Job } from "bullmq";
 

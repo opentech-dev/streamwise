@@ -1,7 +1,7 @@
 import { Job } from "bullmq";
-import { Resources } from "@app/class/core/resources";
-import { FilterSchema, SchemaType, FilterFunction } from "@app/types";
-import { BullWrapper } from "../core/bull-wrapper";
+import { Resources } from "@app/class/helpers/resources";
+import { FilterSchema, SchemaType, FilterFunction } from "@app/types/types";
+import { BullWrapper } from "../helpers/component-connection";
 import { DriverConfig } from "@app/types/connection";
 
 export class Filter extends BullWrapper {
