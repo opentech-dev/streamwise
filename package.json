@@ -18,12 +18,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/index.js",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "trace": "tsc --traceResolution"
   },
   "dependencies": {
     "bullmq": "^4.3.0",
     "ts-loader": "^9.4.4",
+    "tsc-alias": "^1.8.7",
     "typescript": "^5.1.6"
   },
   "devDependencies": {
