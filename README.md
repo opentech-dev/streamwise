@@ -2,11 +2,11 @@
 StreamWise Core is a powerful and flexible pipeline library for data processing. It allows you to effortlessly build data pipelines that can handle any type of data, from simple numbers and strings to complex data structures.
 
 ## Features
-- *Modular Components*: StreamWise provides a variety of components such as filters, operations, and mergers, allowing you to create custom pipelines tailored to your specific data processing needs.
+- **Modular Components**: StreamWise provides a variety of components such as filters, operations, and mergers, allowing you to create custom pipelines tailored to your specific data processing needs.
 
-- *JSON Representation*: Define your data processing pipeline using a JSON representation that provides a clear and concise way to specify the components, their interconnections, and the overall flow of data.
+- **JSON Representation**: Define your data processing pipeline using a JSON representation that provides a clear and concise way to specify the components, their interconnections, and the overall flow of data.
 
-- *Versatility*: StreamWise is designed to be highly versatile, capable of processing diverse data types and handling complex data transformation tasks. 
+- **Versatility**: StreamWise is designed to be highly versatile, capable of processing diverse data types and handling complex data transformation tasks. 
 
 ## Installation
 To get started with StreamWise
@@ -59,14 +59,14 @@ process(dataEntities);
 # Documentation
 StreamWise is a powerful data processing pipeline library designed to handle diverse data types with ease. With a flexible JSON representation, it allows effortless creation of pipelines by connecting modular components like filters, operations, and mergers. Process your data efficiently using custom functions and enjoy the versatility of StreamWise as it handles complex data transformation tasks effortlessly. Whether you're processing simple numbers or intricate data structures, StreamWise empowers you to build seamless data processing pipelines with exceptional ease and performance.
 
-## Overview of Components:
+## Components:
 StreamWise offers three core components for building data processing pipelines:
 
-- *Filters*: Filters evaluate data against user-defined criteria and split it into "resolved" and "rejected" channels based on the evaluation outcome.
+- **Filters**: Filters evaluate data against user-defined criteria and split it into "resolved" and "rejected" channels based on the evaluation outcome.
 
-- *Operations*: Operations perform custom actions on data received from filters or previous operations, enabling data transformation, logging, and more.
+- **Operations**: Operations perform custom actions on data received from filters or previous operations, enabling data transformation, logging, and more.
 
-- *Mergers*: Mergers combine multiple channels of data into a single output, allowing seamless integration of different data streams.
+- **Mergers**: Mergers combine multiple channels of data into a single output, allowing seamless integration of different data streams.
 
 These modular components provide the building blocks to construct powerful, flexible, and efficient data processing pipelines tailored to your specific needs.
 
@@ -139,13 +139,6 @@ In the pipeline schema, we connect the "NumberFilter" component to the input and
 }
 ```
 
-#### Summary
-- *Data Segmentation*: Filters split data into "resolved" and "rejected" streams, facilitating targeted data processing.
-- *Customizable Criteria*: Create filters with specific criteria, enabling fine-grained control over data filtering.
-- *Asynchronous Support*: Filter functions can be asynchronous, allowing asynchronous operations during data evaluation.
-- *Modular and Reusable*: Filters are modular components, allowing easy reuse across different pipelines.
-
-With StreamWise Filters, you can efficiently process data based on custom conditions and streamline data flow in your pipelines.
 ___
 
 ### Operations
@@ -206,12 +199,6 @@ In the pipeline schema, we connect the "Multiplier" component to the input and o
 }
 ```
 
-#### Summary
-
-- *Custom Data Processing*: Operations enable you to perform custom data transformations tailored to your application's requirements.
-- *Asynchronous Support*: Operation functions can be asynchronous, allowing asynchronous operations during data processing.
-- *Modular and Reusable*: Operations are modular components, allowing easy reuse across different pipelines.
-With StreamWise Operations, you can seamlessly process and transform data, making it an essential part of your data processing pipeline.
 ___
 
 ### Merger
@@ -230,13 +217,9 @@ In the pipeline schema, you can define a merger using the following format:
   output: "MRG.5:$resolve" // Merged output channel
 }
 ```
-In this example, we connect the *"DataMerger"* component to two input channels, which receive data from the *"greater"* and *"lesser"* streams. The merged data is then sent to the *"MRG.5:$resolve"* output channel.
+In this example, we connect the **"DataMerger"** component to two input channels, which receive data from the **"greater"** and **"lesser"** streams. The merged data is then sent to the **"MRG.5:$resolve"** output channel.
 
-#### Summary
-- *Data Stream Consolidation:* Mergers efficiently combine and redirect multiple data streams, simplifying complex data processing tasks.
-- *Streamlined Data Flow:* The Merger component ensures a well-organized and structured data flow in your pipeline.
-- *Modular and Reusable*: Mergers are modular components, allowing easy reuse across different pipelines.
-With StreamWise Mergers, you can seamlessly merge data streams, manage data routing efficiently, and enhance the overall data processing capabilities of your pipeline.
+
 ___
 
 ### Creating a Process
@@ -350,7 +333,7 @@ Finally, provide a list of DataEntities to the Process for data processing:
 process([10, 20, 30, 40, 50, 60]);
 ```
 
-### Channel Naming Convention
+### Channels Naming Convention
 In StreamWise, channels play a crucial role in data flow between different components in a pipeline. To ensure a consistent and structured naming scheme, we use the following conventions:
 
 #### Component Types and Keys
@@ -368,9 +351,9 @@ KEY.ID:$EVENT
 ```
 Where:
 
-- *KEY*: The component key, representing the type of component (e.g., FL, OP, MRG, PRC).
-- *ID*: A unique identifier for the component. This ID allows you to differentiate between channels of the same type.
-- *$EVENT*: The event associated with the channel. For example, a Filter can have two events: *$resolve* and *$reject*, while an Operation typically has only *$resolve*.
+- **KEY**: The component key, representing the type of component (e.g., FL, OP, MRG, PRC).
+- **ID**: A unique identifier for the component. This ID allows you to differentiate between channels of the same type.
+- **$EVENT**: The event associated with the channel. For example, a Filter can have two events: **$resolve** and **$reject**, while an Operation typically has only **$resolve**.
 
 #### Examples
 - Filter Channel: `FL.1:$resolve`
