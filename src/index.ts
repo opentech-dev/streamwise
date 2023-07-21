@@ -1,2 +1,2 @@
-export { Streamwise } from '@app/class/helpers/streamwise';
+export { Streamwise } from '@app/class/core/streamwise';
 

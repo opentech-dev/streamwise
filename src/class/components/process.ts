@@ -1,10 +1,11 @@
-import { Resources } from "@app/class/helpers/resources";
+import { Resources } from "@app/class/core/resources";
 import { ProcessSchema, SchemaType } from "@app/types/types";
 import { Filter } from "./filter";
 import { Operation } from "./operation";
 import { DriverConfig } from "@app/types/connection";
-import { BullWrapper } from "../helpers/component-connection";
+import { BullWrapper } from "../core/component-connection";
 import { Queue } from "bullmq";
+import { Merger } from "./merger";
 
 export class Process<T> extends BullWrapper {
   id: number | string;
@@ -14,7 +15,7 @@ export class Process<T> extends BullWrapper {
   dataEntryChannel: string;
   dataEntryQ: Queue;
   outputChannel: string;
-  components: Array<Filter | Operation> = []
+  components: Array<Filter | Operation | Merger> = []
   driverConfig: DriverConfig;
 
   constructor(schema: ProcessSchema, resources: Resources, driverConfig: DriverConfig) {
@@ -38,8 +39,11 @@ export class Process<T> extends BullWrapper {
         case "operation":
           this.components.push(new Operation(componentSchema, resources, this.driverConfig))
           break;
+        case "merger":
+          this.components.push(new Merger(componentSchema, this.driverConfig))
+          break;
         default:
-          throw new Error(`Uknown Component type "${componentSchema.type}"`)
+          throw new Error(`Uknown Component type "${JSON.stringify(componentSchema, null, 2)}"`)
       }
     })
   }

@@ -1,8 +1,8 @@
-import { Resources } from "@app/class/helpers/resources";
+import { Resources } from "@app/class/core/resources";
 import { KeyVal, OperationSchema, SchemaType, OperationFunction } from "@app/types/types";
-import { BullWrapper } from "../helpers/component-connection";
+import { BullWrapper } from "../core/component-connection";
 import { DriverConfig } from "@app/types/connection";
-import { Job } from "bullmq";
+import { Job, Queue } from "bullmq";
 
 export class Operation extends BullWrapper {
   id: number | string;
@@ -10,9 +10,10 @@ export class Operation extends BullWrapper {
   code: string = "OP";
   type: SchemaType = 'operation';
   inputChannel: string;
-  outputChannel: string;
+  outputChannel?: string;
   options?: KeyVal;
   executor: OperationFunction;
+  schema: OperationSchema;
 
   constructor(schema: OperationSchema, resources: Resources, driverConfig: DriverConfig) {
     super(driverConfig)
@@ -21,6 +22,7 @@ export class Operation extends BullWrapper {
     this.inputChannel = schema.input;
     this.outputChannel = schema.output;
     this.options = schema.options;
+    this.schema = schema;
 
     const executor = resources.get('operation', this.name) as OperationFunction;
     if (!executor) {
@@ -31,26 +33,37 @@ export class Operation extends BullWrapper {
   }
 
   createConnections() {
+    let invocation = false;
+    let outputQ: Queue;
 
-    const outputQ = this.createQ('outputQ', this.outputChannel);
+    if (this.outputChannel) {
+      outputQ = this.createQ('outputQ', this.outputChannel);
+    }
 
     const inputWorker = this.createWorker('input', this.inputChannel, async (job: Job) => {
       let resolvedData;
 
       const resolve = (D: any) => {
+        invocation = true;
         resolvedData = D
       }
 
       await this.executor(job.data, resolve, this.options);
 
-      await outputQ.add(`resolved`, resolvedData)
+      if (outputQ)  {
+        await outputQ.add(`resolved`, resolvedData)
+        return resolvedData;
+      }
 
-      return resolvedData;
+      // if reached here, the executor function did not invoke resolve
+      if (!invocation) {
+        throw new Error(`${this.type} "${this.name}" did not invoke resolve() method!`)
+      }
     })
 
     inputWorker.on('completed', (job: Job, returnvalue: any) => {
       job.remove();
-      console.log(`Job ${job.id} - ${job.name} completed!`);
+      console.log(`Operation ${job.id} - ${job.name} completed!`);
     });
   }
 

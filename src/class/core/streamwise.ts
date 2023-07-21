@@ -13,7 +13,7 @@ export class Streamwise<T> {
 
   constructor(bullConfig: RedisOptions) {
     this.driverConfig = {
-      prefix: 'stw',
+      prefix: 'strws',
       connection: bullConfig
     };
   }
@@ -26,8 +26,9 @@ export class Streamwise<T> {
     this.resources.register('operation', name, executor)
   }
 
-  provideSchema(schema: ProcessSchema): PipelineStarterFunction<T> {
-    const process = new Process(schema, this.resources, this.driverConfig);
+  loadSchema(schema: ProcessSchema): PipelineStarterFunction<T> {
+    const prefix = schema.name;
+    const process = new Process(schema, this.resources, {...this.driverConfig, prefix });
     const startPipeline = (data: T) => process.connectInput(data);
     return startPipeline;
   }

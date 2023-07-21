@@ -20,16 +20,22 @@ export interface FilterSchema {
   type: "filter"
   name: string,
   input: string
-  output: [string, string],
+  output: FilterOutput
   criteria: any
 }
+
+export type FilterOutput = {
+  resolve?: string;
+  reject?: string;
+} & ({ resolve: string } | { reject: string }); // at least one should NOT be empty
+
 
 export interface OperationSchema {
   id: number | string
   type: "operation" 
   name: string
   input: string
-  output: string
+  output?: string
   options?: KeyVal
 }
 
@@ -37,7 +43,7 @@ export interface MergerSchema {
   id: number | string
   type: "merger"
   name: string,
-  input: string
+  inputs: string[]
   output: string
 }
 
