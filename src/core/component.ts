@@ -1,6 +1,6 @@
 import { ComponentsSchema, DriverConfig } from "@app/types";
 import { BullWrapper } from "./bull-wrapper";
-import { SchemaValidator } from "@app/validators/schema-validator";
+import { SchemaValidator } from "@app/schema-validator/schema-validator";
 import { Schema } from "ajv";
 
 export class Component extends BullWrapper {
