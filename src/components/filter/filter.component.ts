@@ -8,7 +8,7 @@ import { FilterFunction, SchemaType } from "@app/types";
 import { Validation } from "@app/types/component";
 import { validator } from './fillter.validator'
 
-export class Filter extends Component implements Validation<FilterSchema> {
+export class Filter<T> extends Component implements Validation<FilterSchema> {
   id: number | string;
   name: string;
   code: string = "FL"; 
@@ -16,10 +16,10 @@ export class Filter extends Component implements Validation<FilterSchema> {
   criteria: any;
   inputChannel: string;
   outputChannels: FilterOutput;
-  executor: FilterFunction;  
+  executor: FilterFunction<T>;  
   schema: FilterSchema;
 
-  constructor(schema: FilterSchema, resources: Resources, driverConfig: DriverConfig) {
+  constructor(schema: FilterSchema, resources: Resources<T>, driverConfig: DriverConfig) {
     super(driverConfig)
     this.validate(schema);
     this.id = schema.id;
@@ -29,7 +29,7 @@ export class Filter extends Component implements Validation<FilterSchema> {
     this.criteria = schema.criteria;
     this.schema = schema;
 
-    const executor = resources.get('filter', this.name) as FilterFunction;
+    const executor = resources.get('filter', this.name) as FilterFunction<T>;
     if (!executor) {
       throw new Error(`Cannot find ${this.type} "${this.name}" in resources`)
     }
@@ -64,7 +64,7 @@ export class Filter extends Component implements Validation<FilterSchema> {
         rejectedData = D
       }
 
-      await this.executor(job.data, this.criteria, resolve, reject);
+      await this.executor(job.data as T, this.criteria, resolve, reject);
 
       if (resolvedData && passQ) {
         await passQ.add('resolved', resolvedData)

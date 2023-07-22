@@ -1,7 +1,7 @@
 import { Streamwise } from "../index";
 import { ProcessSchema } from "../types";
 
-const app = new Streamwise<Number[]>({
+const app = new Streamwise<number>({
   host: 'redis-do-user-9799822-0.b.db.ondigitalocean.com',
   port: 25061,
   username: 'default',
@@ -12,7 +12,7 @@ const app = new Streamwise<Number[]>({
   enableTLSForSentinelMode: false,
 });
 
-app.filter('GreaterThan', (data: number, criteria, resolve, reject) => {
+app.filter('GreaterThan', (data, criteria, resolve, reject) => {
   if (data > criteria.filter) {
     resolve(data)
   } else {
@@ -21,7 +21,7 @@ app.filter('GreaterThan', (data: number, criteria, resolve, reject) => {
 });
 
 app.operation('times', (data, resolve, options) => {
-  const output = data * (options?.x || 1)
+  const output = data * (options?.x as number || 1)
   resolve(output);
 });
 

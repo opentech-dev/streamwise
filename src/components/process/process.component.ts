@@ -18,10 +18,10 @@ export class Process<T> extends Component {
   dataEntryChannel: string;
   dataEntryQ: Queue;
   outputChannel: string;
-  components: Array<Filter | Operation | Merger> = []
+  components: Array<Filter<T> | Operation<T> | Merger> = []
   driverConfig: DriverConfig;
 
-  constructor(schema: ProcessSchema, resources: Resources, driverConfig: DriverConfig) {
+  constructor(schema: ProcessSchema, resources: Resources<T>, driverConfig: DriverConfig) {
     // const prefix = schema.name
     super( {...driverConfig });
     this.validate(schema)
@@ -38,10 +38,10 @@ export class Process<T> extends Component {
     components.forEach(componentSchema => {
       switch (componentSchema.type) {
         case "filter":
-          this.components.push(new Filter(componentSchema, resources, this.driverConfig))
+          this.components.push(new Filter<T>(componentSchema, resources, this.driverConfig))
           break;
         case "operation":
-          this.components.push(new Operation(componentSchema, resources, this.driverConfig))
+          this.components.push(new Operation<T>(componentSchema, resources, this.driverConfig))
           break;
         case "merger":
           this.components.push(new Merger(componentSchema, this.driverConfig))
@@ -52,17 +52,13 @@ export class Process<T> extends Component {
     })
   }
 
-  async connectInput(data: T) {
+  async connectInput(data: T[]) {
     const name = `${this.dataEntryChannel}.data-entry`;
-    if (Array.isArray(data)) {
-      const bulk = data.map(d => ({
-        name,
-        data: d
-      }))
-      await this.dataEntryQ.addBulk(bulk);
-    } else {
-      await this.dataEntryQ.add(name, data)
-    }
+    const bulk = data.map(d => ({
+      name,
+      data: d
+    }))
+    await this.dataEntryQ.addBulk(bulk);
   }
 
   validate(schema: ProcessSchema) {

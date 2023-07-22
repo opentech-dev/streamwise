@@ -1,15 +1,15 @@
 import { ResourceFunctionTypes, ResourceStore, SchemaType, ComponentType } from "@app/types";
 
-export class Resources {
+export class Resources<T> {
 
-  resources: ResourceStore = {
+  resources: ResourceStore<T> = {
     process: new Map(),
     filter: new Map(),
     operation: new Map(),
     merger: new Map()
   }
 
-  register(type: SchemaType, name: string, resource: ResourceFunctionTypes) {
+  register(type: SchemaType, name: string, resource: ResourceFunctionTypes<T>) {
     const resourceMap = this.resources[type]
     resourceMap.set(name, resource);
   }

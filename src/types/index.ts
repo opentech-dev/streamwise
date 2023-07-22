@@ -20,20 +20,20 @@ export type PipelineStarterFunction<T> = (data: T) => void;
  * Currently only operation and filters have executor functions
  */
 
-export type ResourceFunctionTypes = FilterFunction | OperationFunction
+export type ResourceFunctionTypes<T> = FilterFunction<T> | OperationFunction<T>
 
-export type ResourceStore = {
-  [key in SchemaType]: Map<string, ResourceFunctionTypes>;
+export type ResourceStore<T> = {
+  [key in SchemaType]: Map<string, ResourceFunctionTypes<T>>;
 };
 
 export type ComponentType = "filter" | "operation"
 
-export type ComponentConfig = {
+export type ComponentConfig<T> = {
   type: ComponentType, 
   name: string, 
-  resource: ResourceFunctionTypes
+  resource: ResourceFunctionTypes<T>
 }
 
-export type ComponentsLib = Array<ComponentConfig>
+export type ComponentsLib<T> = Array<ComponentConfig<T>>
 
 /*** */

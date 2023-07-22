@@ -8,7 +8,7 @@ import * as schemaJson from './operation.schema.json'
 import { Validation } from "@app/types/component";
 import { validator } from "./operation.validator";
 
-export class Operation extends Component implements Validation<OperationSchema> {
+export class Operation<T> extends Component implements Validation<OperationSchema> {
   id: number | string;
   name: string;
   code: string = "OP";
@@ -16,10 +16,10 @@ export class Operation extends Component implements Validation<OperationSchema> 
   inputChannel: string;
   outputChannel?: string;
   options?: KeyVal;
-  executor: OperationFunction;
+  executor: OperationFunction<T>;
   schema: OperationSchema;
 
-  constructor(schema: OperationSchema, resources: Resources, driverConfig: DriverConfig) {
+  constructor(schema: OperationSchema, resources: Resources<T>, driverConfig: DriverConfig) {
     super(driverConfig)
     
     // Validate schema and schema logic
@@ -32,7 +32,7 @@ export class Operation extends Component implements Validation<OperationSchema> 
     this.options = schema.options;
     this.schema = schema;
 
-    const executor = resources.get('operation', this.name) as OperationFunction;
+    const executor = resources.get('operation', this.name) as OperationFunction<T>;
     if (!executor) {
       throw new Error(`Cannot find ${this.type} "${this.name}" in resources`)
     }
@@ -56,7 +56,7 @@ export class Operation extends Component implements Validation<OperationSchema> 
         resolvedData = D
       }
 
-      await this.executor(job.data, resolve, this.options);
+      await this.executor(job.data as T, resolve, this.options);
 
       if (outputQ)  {
         await outputQ.add(`resolved`, resolvedData)

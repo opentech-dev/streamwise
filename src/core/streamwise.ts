@@ -7,7 +7,7 @@ import { ProcessSchema } from "@app/types";
 
 export class Streamwise<T> {
 
-  resources = new Resources()
+  resources = new Resources<T>()
   driverConfig: DriverConfig;
 
   constructor(bullConfig: RedisOptions) {
@@ -17,18 +17,18 @@ export class Streamwise<T> {
     };
   }
 
-  filter(name: string, executor: FilterFunction) {
+  filter(name: string, executor: FilterFunction<T>) {
     this.resources.register('filter', name, executor)
   }
 
-  operation(name: string, executor: OperationFunction) {
+  operation(name: string, executor: OperationFunction<T>) {
     this.resources.register('operation', name, executor)
   }
 
-  loadSchema(schema: ProcessSchema): PipelineStarterFunction<T> {
+  loadSchema(schema: ProcessSchema): PipelineStarterFunction<T[]> {
     const prefix = schema.name;
-    const process = new Process(schema, this.resources, {...this.driverConfig, prefix });
-    const startPipeline = (data: T) => process.connectInput(data);
+    const process = new Process<T>(schema, this.resources, {...this.driverConfig, prefix });
+    const startPipeline = (data: T[]) => process.connectInput(data);
     return startPipeline;
   }
 
