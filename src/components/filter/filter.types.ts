@@ -1,0 +1,1 @@
+export type FilterFunction = (data: any, criteria: any, resolve: Function, reject: Function) => void;

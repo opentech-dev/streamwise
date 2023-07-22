@@ -1,10 +1,14 @@
 import { Job, Queue } from "bullmq";
-import { Resources } from "@app/class/core/resources";
-import { FilterSchema, SchemaType, FilterFunction, FilterOutput } from "@app/types/types";
-import { BullWrapper } from "../core/component-connection";
+import { Resources } from "@app/core/resources";
+import { FilterSchema, FilterOutput } from "./filter.schema";
 import { DriverConfig } from "@app/types/connection";
+import { Component } from "@app/core/component";
+import * as schemaJson from './filter.schema.json';
+import { FilterFunction, SchemaType } from "@app/types";
+import { Validation } from "@app/types/component";
+import { validator } from './fillter.validator'
 
-export class Filter extends BullWrapper {
+export class Filter extends Component implements Validation<FilterSchema> {
   id: number | string;
   name: string;
   code: string = "FL"; 
@@ -17,6 +21,7 @@ export class Filter extends BullWrapper {
 
   constructor(schema: FilterSchema, resources: Resources, driverConfig: DriverConfig) {
     super(driverConfig)
+    this.validate(schema);
     this.id = schema.id;
     this.name = schema.name;
     this.inputChannel = schema.input;
@@ -81,5 +86,14 @@ export class Filter extends BullWrapper {
       job.remove();
       console.log(`Filter ${job.id} - ${job.name} completed!`);
     });
+  }
+
+
+  validate(schema: FilterSchema) {
+    // schema validation
+    this.validateSchema(schema, schemaJson)
+
+    // functional validator
+    validator(schema)
   }
 }

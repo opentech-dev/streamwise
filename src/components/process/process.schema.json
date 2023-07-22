@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "SchemaType": {
+      "type": "string",
+      "enum": [
+        "process",
+        "filter",
+        "operation",
+        "merger"
+      ]
+    },
+    "ProcessComponents": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/FilterSchema"
+        },
+        {
+          "$ref": "#/definitions/OperationSchema"
+        },
+        {
+          "$ref": "#/definitions/MergerSchema"
+        }
+      ]
+    },
+    "FilterSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "const": "filter"
+        },
+        "name": {
+          "type": "string"
+        },
+        "input": {
+          "type": "string"
+        },
+        "output": {
+          "$ref": "#/definitions/FilterOutput"
+        },
+        "criteria": {}
+      },
+      "required": [
+        "id",
+        "type",
+        "name",
+        "input",
+        "output",
+        "criteria"
+      ],
+      "additionalProperties": false
+    },
+    "FilterOutput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "resolve": {
+              "type": "string"
+            },
+            "reject": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "resolve"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "reject": {
+              "type": "string"
+            },
+            "resolve": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reject"
+          ]
+        }
+      ]
+    },
+    "OperationSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "const": "operation"
+        },
+        "name": {
+          "type": "string"
+        },
+        "input": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "options": {}
+      },
+      "required": [
+        "id",
+        "type",
+        "name",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "MergerSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "const": "merger"
+        },
+        "name": {
+          "type": "string"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "output": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "name",
+        "inputs",
+        "output"
+      ],
+      "additionalProperties": false
+    },
+    "ProcessSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "process"
+        },
+        "dataEntry": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProcessComponents"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type",
+        "dataEntry",
+        "output",
+        "components"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { Streamwise } from "../index";
-import { ProcessSchema } from "../types/types";
+import { ProcessSchema } from "../types";
 
 const app = new Streamwise<Number[]>({
   host: 'redis-do-user-9799822-0.b.db.ondigitalocean.com',
@@ -24,6 +24,12 @@ app.operation('times', (data, resolve, options) => {
   const output = data * (options?.x || 1)
   resolve(output);
 });
+
+app.operation('log', (data, resolve, options) => {
+  console.log(data);
+  resolve(data);
+});
+
 
 const schema: ProcessSchema = {
   id: 1,
@@ -83,5 +89,5 @@ const schema: ProcessSchema = {
 
 const process = app.loadSchema(schema);
 
-process([10, 20, 30, 40, 50, 60])
+process([10])
 

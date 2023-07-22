@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "FilterSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "const": "filter"
+        },
+        "name": {
+          "type": "string"
+        },
+        "input": {
+          "type": "string"
+        },
+        "output": {
+          "$ref": "#/definitions/FilterOutput"
+        },
+        "criteria": {}
+      },
+      "required": [
+        "id",
+        "type",
+        "name",
+        "input",
+        "output",
+        "criteria"
+      ],
+      "additionalProperties": false
+    },
+    "FilterOutput": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "resolve": {
+              "type": "string"
+            },
+            "reject": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "resolve"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "reject": {
+              "type": "string"
+            },
+            "resolve": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reject"
+          ]
+        }
+      ]
+    }
+  }
+}

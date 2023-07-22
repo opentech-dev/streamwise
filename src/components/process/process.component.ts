@@ -1,13 +1,16 @@
-import { Resources } from "@app/class/core/resources";
-import { ProcessSchema, SchemaType } from "@app/types/types";
-import { Filter } from "./filter";
-import { Operation } from "./operation";
+import { Resources } from "@app/core/resources";
+import { SchemaType } from "@app/types";
+import { ProcessSchema } from "./process.schema";
+import { Filter } from "../filter/filter.component";
+import { Operation } from "../operation/operation.component";
 import { DriverConfig } from "@app/types/connection";
-import { BullWrapper } from "../core/component-connection";
 import { Queue } from "bullmq";
-import { Merger } from "./merger";
+import { Merger } from "../merger/merger.component";
+import { Component } from "@app/core/component";
+import * as schemaJson from './process.schema.json';
+import { ProcessTreeValidator } from '@app/components/process/process.validator'
 
-export class Process<T> extends BullWrapper {
+export class Process<T> extends Component {
   id: number | string;
   name: string;
   code: string = "PRC"
@@ -21,6 +24,7 @@ export class Process<T> extends BullWrapper {
   constructor(schema: ProcessSchema, resources: Resources, driverConfig: DriverConfig) {
     // const prefix = schema.name
     super( {...driverConfig });
+    this.validate(schema)
     this.id = schema.id;
     this.name = schema.name;
     this.dataEntryChannel = schema.dataEntry;
@@ -59,6 +63,14 @@ export class Process<T> extends BullWrapper {
     } else {
       await this.dataEntryQ.add(name, data)
     }
+  }
+
+  validate(schema: ProcessSchema) {
+    // Schema validation
+    this.validateSchema(schema, schemaJson);
+
+    const treeValidator = new ProcessTreeValidator();
+    treeValidator.run(schema);
   }
 
 }

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/OperationSchema",
+  "definitions": {
+    "OperationSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "const": "operation"
+        },
+        "name": {
+          "type": "string"
+        },
+        "input": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "options": {}
+      },
+      "required": [
+        "id",
+        "type",
+        "name",
+        "input"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

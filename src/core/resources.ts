@@ -1,4 +1,4 @@
-import { ResourceFunctionTypes, ResourceStore, SchemaType, ComponentType } from "@app/types/types";
+import { ResourceFunctionTypes, ResourceStore, SchemaType, ComponentType } from "@app/types";
 
 export class Resources {
 

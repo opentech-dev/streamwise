@@ -12,7 +12,9 @@
     "outDir": "./dist",
     "strict": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "resolveJsonModule": true,
+    "downlevelIteration": true
   },
   "files": [
     "src/index.ts"

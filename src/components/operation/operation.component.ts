@@ -1,10 +1,14 @@
-import { Resources } from "@app/class/core/resources";
-import { KeyVal, OperationSchema, SchemaType, OperationFunction } from "@app/types/types";
-import { BullWrapper } from "../core/component-connection";
+import { Resources } from "@app/core/resources";
+import { KeyVal, SchemaType, OperationFunction } from "@app/types";
 import { DriverConfig } from "@app/types/connection";
 import { Job, Queue } from "bullmq";
+import { OperationSchema } from "./operation.schema";
+import { Component } from "@app/core/component";
+import * as schemaJson from './operation.schema.json'
+import { Validation } from "@app/types/component";
+import { validator } from "./operation.validator";
 
-export class Operation extends BullWrapper {
+export class Operation extends Component implements Validation<OperationSchema> {
   id: number | string;
   name: string;
   code: string = "OP";
@@ -17,6 +21,10 @@ export class Operation extends BullWrapper {
 
   constructor(schema: OperationSchema, resources: Resources, driverConfig: DriverConfig) {
     super(driverConfig)
+    
+    // Validate schema and schema logic
+    this.validate(schema)
+
     this.id = schema.id;
     this.name = schema.name;
     this.inputChannel = schema.input;
@@ -65,6 +73,12 @@ export class Operation extends BullWrapper {
       job.remove();
       console.log(`Operation ${job.id} - ${job.name} completed!`);
     });
+  }
+
+  validate(schema: OperationSchema) {
+    this.validateSchema(schema, schemaJson);
+
+    validator(schema);
   }
 
 }
