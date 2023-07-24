@@ -9,7 +9,7 @@ export interface ProcessSchema {
   id: number | string
   name: string
   type: "process"
-  dataEntry: string,
-  output: string,
+  inbound: string,
+  outbound: string,
   components: Array<ProcessComponents>
 }

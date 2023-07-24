@@ -62,6 +62,8 @@ StreamWise is a powerful data processing pipeline library designed to handle div
 ## Components:
 StreamWise offers three core components for building data processing pipelines:
 
+- **Process**: A Process in StreamWise represents the main data pipeline, comprising interconnected components for processing data entities.
+
 - **Filters**: Filters evaluate data against user-defined criteria and split it into "resolved" and "rejected" channels based on the evaluation outcome.
 
 - **Operations**: Operations perform custom actions on data received from filters or previous operations, enabling data transformation, logging, and more.
@@ -70,212 +72,118 @@ StreamWise offers three core components for building data processing pipelines:
 
 These modular components provide the building blocks to construct powerful, flexible, and efficient data processing pipelines tailored to your specific needs.
 
-## Filters
-Filters are integral components in StreamWise that enable data evaluation based on user-defined criteria. They process incoming data and categorize it into two channels: "resolved" and "rejected," depending on whether the data meets the filter's criteria.
+## Process
 
-### Creating Custom Filters
-To create a custom filter, use the `app.filter()` method. Define a filter function that takes the `data`, `criteria`, `resolve` function, and `reject` function as arguments. The filter function evaluates the data against the specified criteria and calls the appropriate function (`resolve` or `reject`) based on the result.
+A Process in StreamWise represents the main data pipeline, comprising interconnected components for processing data entities. It is the core structure that orchestrates the flow of data through the pipeline, from the inbound channel to the outbound channel.
 
-```
-app.filter('CustomFilter', (data, criteria, resolve, reject) => {
-  if (data > criteria.threshold) {
-    resolve(data); // Data passes the filter
-  } else {
-    reject(data); // Data does not meet the criteria
-  }
-});
-```
+### Schema
 
-### Adding Filters to the Pipeline
-In the pipeline schema, specify filters by their unique names and connect them to other components using the "input" and "output" properties.
+The Process component follows the JSON schema defined as `ProcessSchema`. Here are the properties used to configure a Process:
 
-```
-{
-  id: 1,
-  type: "filter",
-  name: "CustomFilter",
-  input: "PRC.1:$dataEntry",
-  output: {
-    resolve: "FL.1:$resolve",
-    reject: "FL.1:$reject"
-  },
-  criteria: {
-    threshold: 50 // Example criteria: filter data greater than 50
-  }
-}
-```
-
-### Criteria Configuration
-Criteria are customizable parameters used by filters to determine data eligibility. In the example above, the filter checks if the data is greater than the specified "threshold" value (in this case, 50). You can define various criteria based on your data and processing needs.
+*   `id` (number|string, required): A unique identifier for the Process.
+*   `name` (string, required): A descriptive name for the Process.
+*   `type` (string, const: "process", required): Specifies the component type as "process."
+*   `inbound` (string, required): The channel where data entities enter the Process.
+*   `outbound` (string, required): The channel where processed data entities exit the Process.
+*   `components` (ComponentsSchema[], required): An array of components (Filters, Operations, or Mergers) that form the Process.
 
 ### Example
-Suppose we want to filter out numbers less than 50 and separate them into two channels: "greater" and "lesser." We create a custom filter with a criteria threshold of 50 to achieve this:
 
-```
-app.filter('NumberFilter', (data, criteria, resolve, reject) => {
-  if (data > criteria.threshold) {
-    resolve(data); // Data greater than 50 goes to "greater" channel
-  } else {
-    reject(data); // Data less than or equal to 50 goes to "lesser" channel
-  }
-});
-```
-
-In the pipeline schema, we connect the "NumberFilter" component to the input and output channels:
-
-```
-{
-  id: 1,
-  type: "filter",
-  name: "NumberFilter",
-  input: "PRC.1:$dataEntry",
-  output: {
-    resolve: "FL.1:$greater",
-    reject: "FL.1:$lesser"
-  },
-  criteria: {
-    threshold: 50 // Filter criteria to separate numbers greater than 50
-  }
-}
-```
-
-___
-
-## Operations
-Operations are essential components in StreamWise that enable custom data processing and transformations. They process data received from filters or previous operations and allow you to perform specific actions based on your application's requirements.
-
-### Creating Custom Operations
-To create a custom operation, use the `app.operation()` method. Define an operation function that takes the `data`, `resolve` function, and optional `options` as arguments. The operation function processes the data as needed and calls the resolve function to pass the processed data to the next component in the pipeline.
-
-```
-app.operation('times', (data, resolve, options) => {
-  const output = data * (options?.x || 1);
-  resolve(output); // Pass processed data to the next component
-});
-```
-
-### Adding Operations to the Pipeline
-In the pipeline schema, specify operations by their unique names and connect them to other components using the "input" and "output" properties.
-
-```
-{
-  id: 3,
-  type: "operation",
-  name: "times",
-  input: "FL.1:$resolve",
-  output: "OP.3:$resolve",
-  options: {
-    x: 5 // Example options: custom multiplication factor (default: 1)
-  }
-}
-```
-
-### Options Configuration
-Options allow you to customize the behavior of operations. In the example above, we provide an option "x" to set a custom multiplication factor.
-
-### Example
-Suppose we want to multiply the data received from a filter by a custom factor, which defaults to 1 if not provided. We create a custom operation named "Multiplier" to achieve this:
-
-```
-app.operation('Multiplier', (data, resolve, options) => {
-  const output = data * (options?.factor || 1);
-  resolve(output); // Pass processed data to the next component
-});
-```
-In the pipeline schema, we connect the "Multiplier" component to the input and output channels:
-
-```
-{
-  id: 3,
-  type: "operation",
-  name: "Multiplier",
-  input: "FL.1:$resolve",
-  output: "OP.3:$resolve",
-  options: {
-    factor: 5 // Custom multiplication factor (default: 1)
-  }
-}
-```
-
-___
-
-## Merger
-The Merger component in StreamWise is used to consolidate multiple input channels into a single output channel. It facilitates the redirection and combination of different data streams, simplifying data flow management in your pipeline.
-
-### Adding Mergers to the Pipeline
-In the pipeline schema, you can define a merger using the following format:
-```{
-  id: 5,
-  type: "merger",
-  name: "DataMerger",
-  inputs: [
-    "OP.3:$resolve", // Data from "greater" channel
-    "OP.4:$resolve", // Data from "lesser" channel
-  ],
-  output: "MRG.5:$resolve" // Merged output channel
-}
-```
-In this example, we connect the **"DataMerger"** component to two input channels, which receive data from the **"greater"** and **"lesser"** streams. The merged data is then sent to the **"MRG.5:$resolve"** output channel.
-
-
-___
-
-## Creating a Process
-A Process in StreamWise represents the entire data processing pipeline, consisting of interconnected components such as Filters, Operations, and Mergers. To create a Process, follow these steps:
-
-### Step 1: Setup StreamWise
-Initialize StreamWise by providing the Redis configuration and any custom Filters and Operations you want to use:
-
-```
-
+```javascript 
 import { StreamWise } from "@streamwise/core";
 
 const app = new StreamWise({
-  host: 'redis-host',
-  port: 6379,
-  username: 'username',
-  password: 'password',
+  // Redis configuration
 });
 
-// Add custom Filters and Operations (optional)
-app.filter('CustomFilter', (data, criteria, resolve, reject) => {
-  if (data > criteria.threshold) {
-    resolve(data); // Data passes the filter
-  } else {
-    reject(data); // Data does not meet the criteria
-  }
-});
+// Define custom Filters, Operations, and Mergers (if needed)
 
-app.operation('CustomOperation', (data, resolve, options) => {
-  // Example: Logging data with a custom label
-  console.log(data, 'is', options?.label);
-  resolve(data); // Pass the data further down the pipeline
-});
-
-app.operation('Logger', (data, resolve, options) => {
-  // Log any data
-  console.log(data);
-  resolve(data); // Pass the data further down the pipeline
-});
-
-```
-
-### Step 2: Define the Pipeline Schema
-Create a JSON representation of the pipeline schema, specifying the components and their connections:
-
-```
+// Define a Schema for the Process
 const schema = {
   id: 1,
   name: "DataProcessingPipeline",
   type: "process",
-  dataEntry: "PRC.1:$dataEntry",
-  output: "PRC.1:$resolve",
+  inbound: "PRC.1:$inbound",
+  outbound: "PRC.1:$outbound",
+  components: [
+    // Define the components and their interconnections here
+  ],
+};
+
+// Load the Schema to create the Process
+const process = app.loadSchema(schema);
+
+// Provide a list of DataEntities as input to the Process
+process([dataEntity1, dataEntity2, dataEntity3, /* ... */]);
+
+```
+In this example, a custom Process named "`DataProcessingPipeline`" is defined. It consists of a series of interconnected components (**Filters**, **Operations**, and **Mergers**) that process data entities as they flow through the pipeline. The Process takes an array of DataEntities as input and processes them accordingly, producing the final output through the outbound channel "`PRC.1:$outbound`". By defining and configuring components within the Process, you can design complex data processing workflows tailored to your specific application requirements.
+
+___
+
+## Filters
+
+Filters are components in StreamWise that allow you to selectively include or exclude data entities based on specific criteria. They help streamline data processing pipelines by segmenting data into different channels, depending on whether they meet the filter's conditions.
+
+### Schema
+
+The Filter component follows the JSON schema defined as `FilterSchema`. Here are the properties used to configure a Filter:
+
+*   `id` (number|string, required): A unique identifier for the Filter component.
+*   `type` (string, const: "filter", required): Specifies the component type as "filter."
+*   `name` (string, required): A descriptive name for the Filter component.
+*   `input` (string, required): The input channel where the Filter component receives data entities.
+*   `output` ([FilterOutput](#filteroutput), required): An object defining the output channels for resolved and rejected data entities.
+*   `criteria` (any, required): The filter criteria represented as an object. The structure of this object depends on the custom Filter function defined.
+
+### Filter Output
+
+The `FilterOutput` schema is an object that specifies the output channels for resolved and rejected data entities:
+
+*   `resolve` (string, required): The channel where data entities that meet the filter criteria will be sent.
+*   `reject` (string, required): The channel where data entities that do not meet the filter criteria will be sent.
+
+### Filter Function
+
+A Filter component is powered by a custom filter function that implements the filtering logic. The filter function can be synchronous or asynchronous, depending on the use case. It receives the following parameters:
+
+*   `data` (any): The data entity to be filtered.
+*   `criteria` (any): The filter criteria provided in the Filter configuration.
+*   `resolve` (Function): A callback function to resolve the data entity if it meets the criteria.
+*   `reject` (Function): A callback function to reject the data entity if it does not meet the criteria.
+
+### Example
+
+```javascript
+import { StreamWise } from "@streamwise/core";
+
+const app = new StreamWise({
+  // Redis configuration
+});
+
+// Add a custom Filter
+app.filter('CustomFilter', async (data, criteria, resolve, reject) => {
+  // Asynchronous filtering logic
+  if (data > criteria.threshold) {
+    resolve(data); // Data passes the filter
+  } else {
+    reject(data); // Data does not meet the criteria
+  }
+});
+
+// Define a Schema for the Process
+const schema = {
+  id: 1,
+  name: "DataProcessingPipeline",
+  type: "process",
+  inbound: "PRC.1:$inbound", 
+  outbound: "PRC.1:$outbound", 
   components: [
     {
       id: 2,
       type: "filter",
       name: "CustomFilter",
-      input: "PRC.1:$dataEntry",
+      input: "PRC.1:$inbound",
       output: {
         resolve: "FL.2:$resolve",
         reject: "FL.2:$reject",
@@ -284,57 +192,178 @@ const schema = {
         threshold: 50, // Example criteria: filter data greater than 50
       },
     },
+    // ... other components
+  ],
+};
+
+// Load the Schema to create the Process
+const process = app.loadSchema(schema);
+
+// Provide a list of DataEntities
+process([10, 20, 30, 40, 50, 60]);
+
+```
+
+By leveraging Filters, you can efficiently route and process data entities in StreamWise's data processing pipeline based on specific criteria, enabling better data management and analysis.
+___
+
+## Operations
+
+Operations are components in StreamWise that allow you to process data entities as they pass through the pipeline. They enable you to perform various actions on the data, such as logging, transformation, or custom operations.
+
+### Schema
+
+The Operation component follows the JSON schema defined as `OperationSchema`. Here are the properties used to configure an Operation:
+
+*   `id` (number|string, required): A unique identifier for the Operation component.
+*   `type` (string, const: "operation", required): Specifies the component type as "operation."
+*   `name` (string, required): A descriptive name for the Operation component.
+*   `input` (string, required): The input channel where the Operation component receives data entities.
+*   `output` (string): The channel where processed data entities will be sent (optional).
+*   `options` (any): Additional options or parameters for the Operation function (optional).
+
+### Operation Function
+
+An Operation component is powered by a custom operation function that implements the data processing logic. The operation function can be synchronous or asynchronous, depending on the use case. It receives the following parameters:
+
+*   `data` (any): The data entity to be processed.
+*   `resolve` (Function): A callback function to pass the processed data entity to the next component.
+*   `options` (any): Additional options or parameters provided in the Operation configuration (optional).
+
+### Example
+```javascript
+import { StreamWise } from "@streamwise/core";
+
+const app = new StreamWise({
+  // Redis configuration
+});
+
+// Add custom Operation "times"
+app.operation('times', (data, resolve, options) => {
+  const multiplier = options?.x || 1;
+  const output = data * multiplier;
+  resolve(output); // Pass processed data to the next component
+});
+
+// Add custom Operation "log"
+app.operation('log', (data, resolve, options) => {
+  console.log(options?.label, data);
+  resolve(data); // Pass processed data to the next component
+});
+
+// Define a Schema for the Process
+const schema = {
+  id: 1,
+  name: "DataProcessingPipeline",
+  type: "process",
+  inbound: "PRC.1:$inbound",
+  outbound: "PRC.1:$outbound",
+  components: [
+    {
+      id: 2,
+      type: "operation",
+      name: "times",
+      input: "PRC.1:$inbound",
+      output: "OP.2:$resolve",
+      options: {
+        x: 5, // Example options: custom multiplier
+      },
+    },
     {
       id: 3,
       type: "operation",
-      name: "CustomOperation",
-      input: "FL.2:$resolve",
+      name: "log",
+      input: "OP.2:$resolve",
       output: "OP.3:$resolve",
       options: {
-        label: "greater than 50", // Example options: custom label for logging
+        label: "multiplied value is:", // Example options: custom label for logging
       },
     },
-    {
-      id: 4,
-      type: "operation",
-      name: "CustomOperation",
-      input: "FL.2:$reject",
-      output: "OP.4:$resolve",
-      options: {
-        label: "lesser than 50", // Example options: custom label for logging
-      },
-    },
-    {
-      id: 5,
-      type: "merger",
-      name: "MergeTwoStreams",
-      inputs: [
-        "OP.3:$resolve",
-        "OP.4:$resolve",
-      ],
-      output: "MRG.5:$resolve"
-    },
-    {
-      id: 5,
-      type: "operation",
-      name: "Logger",
-      input: "MRG.5:$resolve"
-    },
+    // ... other components
   ],
 };
-```
 
-### Step 3: Load the Pipeline Schema
-Load the pipeline schema into the app to create the Process:
-```
+// Load the Schema to create the Process
 const process = app.loadSchema(schema);
+
+// Provide a list of DataEntities
+process([10, 20, 30, 40, 50, 60]);
+
+
 ```
 
-### Step 4: Provide Data to the Process
-Finally, provide a list of DataEntities to the Process for data processing:
-```
+___
+
+## Mergers
+
+Mergers are components in StreamWise that allow you to combine two or more channels into a single channel. They provide the capability to aggregate and consolidate data entities from multiple sources into one unified channel.
+
+### Schema
+
+The Merger component follows the JSON schema defined as `MergerSchema`. Here are the properties used to configure a Merger:
+
+*   `id` (number|string, required): A unique identifier for the Merger component.
+*   `type` (string, const: "merger", required): Specifies the component type as "merger."
+*   `name` (string, required): A descriptive name for the Merger component.
+*   `inputs` (string[], required): An array of input channels to merge into a single channel.
+*   `output` (string, required): The channel where merged data entities will be sent.
+
+### Example
+
+```javascript
+import { StreamWise } from "@streamwise/core";
+
+const app = new StreamWise({
+  // Redis configuration
+});
+
+// Define custom Mergers
+app.merger('mergeTwo', {
+  inputs: ["FL.1:$resolve", "FL.2:$resolve"],
+  output: "MRG.1:$resolve",
+});
+
+app.merger('mergeThree', {
+  inputs: ["OP.1:$resolve", "OP.2:$resolve", "OP.3:$resolve"],
+  output: "MRG.2:$resolve",
+});
+
+// Define a Schema for the Process
+const schema = {
+  id: 1,
+  name: "DataProcessingPipeline",
+  type: "process",
+  inbound: "PRC.1:$inbound",
+  outbound: "PRC.1:$outbound",
+  components: [
+    {
+      id: 2,
+      type: "merger",
+      name: "mergeTwo",
+      inputs: ["OP.1:$resolve", "OP.2:$resolve"],
+      output: "MRG.1:$resolve",
+    },
+    {
+      id: 3,
+      type: "merger",
+      name: "mergeThree",
+      inputs: ["OP.3:$resolve", "OP.4:$resolve", "OP.5:$resolve"],
+      output: "MRG.2:$resolve",
+    },
+    // ... other components
+  ],
+};
+
+// Load the Schema to create the Process
+const process = app.loadSchema(schema);
+
+// Provide a list of DataEntities
 process([10, 20, 30, 40, 50, 60]);
 ```
+
+In this example, two custom Mergers are defined: "`mergeTwo`" and "`mergeThree`". "`mergeTwo`" combines the data entities from two input channels "`OP.1:$resolve`" and "`OP.2:$resolve`" into a single channel "`MRG.1:$resolve`". Similarly, "`mergeThree`" combines the data entities from three input channels "`OP.3:$resolve`", "`OP.4:$resolve`", and "`OP.5:$resolve`" into a single channel "`MRG.2:$resolve`". By using Mergers, you can effectively consolidate data from multiple sources and streamline data processing within your StreamWise data pipeline.
+
+___
 
 ## Channels Naming Convention
 In StreamWise, channels play a crucial role in data flow between different components in a pipeline. To ensure a consistent and structured naming scheme, we use the following conventions:
@@ -367,9 +396,10 @@ Where:
   - This represents the output channel of the Operation with ID 1, which successfully processed the data (event $resolve).
 - Merger Channel: `MRG.1:$resolve`
   - This represents the output channel of the Merger with ID 1, which combines and redirects data to the next component (event $resolve).
-- Process Channel: `PRC.1:$dataEntry`
+- Process Channel: `PRC.1:$inbound`
   - This represents the input channel of the Process with ID 1, where data enters the pipeline.
-
+- Process Channel: `PRC.1:$outbound`
+  - This represents the output channel of the Process with ID 1, where data exits the pipeline.
 
 
 

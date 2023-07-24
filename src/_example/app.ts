@@ -35,13 +35,13 @@ const schema: ProcessSchema = {
   id: 1,
   name: "ProcessNumbers",
   type: "process",
-  dataEntry: "PRC.1:$dataEntry",
-  output: "PRC.1:$resolve",
+  inbound: "PRC.1:$inbound",
+  outbound: "PRC.1:$outbound",
   components: [{
     id: 2,
     type: "filter",
     name: "GreaterThan",
-    input: "PRC.1:$dataEntry",
+    input: "PRC.1:$inbound",
     output: {
       resolve: "FL.2:$resolve",
       reject: "FL.2:$reject"
@@ -89,5 +89,5 @@ const schema: ProcessSchema = {
 
 const process = app.loadSchema(schema);
 
-process([10])
+process(10)
 

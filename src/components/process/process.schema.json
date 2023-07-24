@@ -174,10 +174,10 @@
           "type": "string",
           "const": "process"
         },
-        "dataEntry": {
+        "inbound": {
           "type": "string"
         },
-        "output": {
+        "outbound": {
           "type": "string"
         },
         "components": {
@@ -191,8 +191,8 @@
         "id",
         "name",
         "type",
-        "dataEntry",
-        "output",
+        "inbound",
+        "outbound",
         "components"
       ],
       "additionalProperties": false

@@ -15,9 +15,9 @@ export class Process<T> extends Component {
   name: string;
   code: string = "PRC"
   type: SchemaType = 'process'
-  dataEntryChannel: string;
-  dataEntryQ: Queue;
-  outputChannel: string;
+  inboundChannel: string;
+  inboundQ: Queue;
+  outboundChannel: string;
   components: Array<Filter<T> | Operation<T> | Merger> = []
   driverConfig: DriverConfig;
 
@@ -27,11 +27,11 @@ export class Process<T> extends Component {
     this.validate(schema)
     this.id = schema.id;
     this.name = schema.name;
-    this.dataEntryChannel = schema.dataEntry;
-    this.outputChannel = schema.output;
+    this.inboundChannel = schema.inbound;
+    this.outboundChannel = schema.outbound;
     this.driverConfig = {...driverConfig };
 
-    this.dataEntryQ = this.createQ('dataEntry', this.dataEntryChannel);
+    this.inboundQ = this.createQ('inbound', this.inboundChannel);
 
     const components = schema.components;
 
@@ -52,19 +52,24 @@ export class Process<T> extends Component {
     })
   }
 
-  async connectInput(data: T[]) {
-    const name = `${this.dataEntryChannel}.data-entry`;
-    const bulk = data.map(d => ({
-      name,
-      data: d
-    }))
-    await this.dataEntryQ.addBulk(bulk);
+  async connectInput(data: T[] | T) {
+    const name = "inbound";
+    if (Array.isArray(data)) {
+      const bulk = data.map(d => ({
+        name,
+        data: d
+      }))
+      await this.inboundQ.addBulk(bulk);
+    } else {
+      await this.inboundQ.add(name, data);
+    }
   }
 
   validate(schema: ProcessSchema) {
     // Schema validation
     this.validateSchema(schema, schemaJson);
 
+    // Logic validation
     const treeValidator = new ProcessTreeValidator();
     treeValidator.run(schema);
   }
