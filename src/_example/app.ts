@@ -20,16 +20,10 @@ app.filter('GreaterThan', (data, criteria, resolve, reject) => {
   }
 });
 
-app.operation('times', (data, resolve, options) => {
-  const output = data * (options?.x as number || 1)
-  resolve(output);
-});
-
 app.operation('log', (data, resolve, options) => {
-  console.log(data);
+  console.log('LOG', data, options?.label );
   resolve(data);
 });
-
 
 const schema: ProcessSchema = {
   id: 1,
@@ -75,19 +69,23 @@ const schema: ProcessSchema = {
       "OP.3:$resolve",
       "OP.4:$resolve",
     ],
-    output: "MRG.5:$resolve"
-  },{
-    id: 6,
-    type: "operation",
-    name: "log",
-    input: "MRG.5:$resolve",
-    options: {
-      label: "FINAL DESTINATION"
-    }
+    output: "PRC.1:$outbound"
   }]
 }
 
+
+const arr: number[] = [10,20,30,40,50,60,70];
+
 const process = app.loadSchema(schema);
 
-process(10)
+process.inbound(arr.shift() as number);
+
+process.on('outbound', (nr: number) => {
+  console.log('OUTBOUND', nr);
+  if (arr.length) {
+    process.inbound(arr.shift() as number);
+  }
+})
+
+
 

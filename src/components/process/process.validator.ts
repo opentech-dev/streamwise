@@ -40,7 +40,7 @@ export class ProcessTreeValidator {
       })
 
       this.inputs.delete(schema.inbound)
-      this.outputs.delete(schema.outbound)
+      if (schema.outbound) this.outputs.delete(schema.outbound)
 
       this.checkForPairs()
   }

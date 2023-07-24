@@ -25,11 +25,10 @@ export class Streamwise<T> {
     this.resources.register('operation', name, executor)
   }
 
-  loadSchema(schema: ProcessSchema): PipelineStarterFunction<T|T[]> {
+  loadSchema(schema: ProcessSchema): Process<T> {
     const prefix = schema.name;
     const process = new Process<T>(schema, this.resources, {...this.driverConfig, prefix });
-    const startPipeline = (data: T|T[]) => process.connectInput(data);
-    return startPipeline;
+    return process;
   }
 
 }

@@ -82,9 +82,8 @@ export class Filter<T> extends Component implements Validation<FilterSchema> {
       }
     })
 
-    inputWorker.on('completed', (job: Job, returnvalue: any) => {
-      job.remove();
-      console.log(`Filter ${job.id} - ${job.name} completed!`);
+    inputWorker.on('completed', async (job: Job, returnvalue: any) => {
+      await job.remove();
     });
   }
 

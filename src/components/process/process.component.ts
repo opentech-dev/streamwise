@@ -4,22 +4,25 @@ import { ProcessSchema } from "./process.schema";
 import { Filter } from "../filter/filter.component";
 import { Operation } from "../operation/operation.component";
 import { DriverConfig } from "@app/types/connection";
-import { Queue } from "bullmq";
+import { Job, Queue, Worker } from "bullmq";
 import { Merger } from "../merger/merger.component";
 import { Component } from "@app/core/component";
 import * as schemaJson from './process.schema.json';
 import { ProcessTreeValidator } from '@app/components/process/process.validator'
+import { ProcessEvent } from './process.types';
+import * as EventEmmiter from 'events';
 
 export class Process<T> extends Component {
-  id: number | string;
-  name: string;
-  code: string = "PRC"
-  type: SchemaType = 'process'
-  inboundChannel: string;
-  inboundQ: Queue;
-  outboundChannel: string;
-  components: Array<Filter<T> | Operation<T> | Merger> = []
-  driverConfig: DriverConfig;
+  private id: number | string;
+  private name: string;
+  private code: string = "PRC"
+  private type: SchemaType = 'process'
+  private inboundChannel: string;
+  private inboundQ: Queue;
+  private outboundChannel?: string;
+  private outboundWorker?: Worker;
+  private eventEmmiter = new EventEmmiter();
+  private components: Array<Filter<T> | Operation<T> | Merger> = []
 
   constructor(schema: ProcessSchema, resources: Resources<T>, driverConfig: DriverConfig) {
     // const prefix = schema.name
@@ -29,9 +32,9 @@ export class Process<T> extends Component {
     this.name = schema.name;
     this.inboundChannel = schema.inbound;
     this.outboundChannel = schema.outbound;
-    this.driverConfig = {...driverConfig };
 
     this.inboundQ = this.createQ('inbound', this.inboundChannel);
+    this.setupOutbound();
 
     const components = schema.components;
 
@@ -52,7 +55,31 @@ export class Process<T> extends Component {
     })
   }
 
-  async connectInput(data: T[] | T) {
+  private setupOutbound() {
+    if (!this.outboundChannel) return;
+    this.outboundWorker = this.createWorker('outbound', this.outboundChannel, async (job: Job) => {
+      const data = job.data as T;
+      this.eventEmmiter.emit("outbound", data);
+      return data;
+    })
+
+    this.outboundWorker.on('completed', async (job: Job, returnvalue: any) => {
+      await job.remove();
+    });
+  }
+
+  private validate(schema: ProcessSchema) {
+    // Schema validation
+    this.validateSchema(schema, schemaJson);
+
+    // Logic validation
+    const treeValidator = new ProcessTreeValidator();
+    treeValidator.run(schema);
+  }
+
+  /** PUBLIC METHODS */
+  
+  public async inbound(data: T[] | T) {
     const name = "inbound";
     if (Array.isArray(data)) {
       const bulk = data.map(d => ({
@@ -65,13 +92,10 @@ export class Process<T> extends Component {
     }
   }
 
-  validate(schema: ProcessSchema) {
-    // Schema validation
-    this.validateSchema(schema, schemaJson);
-
-    // Logic validation
-    const treeValidator = new ProcessTreeValidator();
-    treeValidator.run(schema);
+  public on(event: ProcessEvent, callback: (...args: any[]) => void) {
+    this.eventEmmiter.on(event, callback)
+    return this;
   }
 
 }
+

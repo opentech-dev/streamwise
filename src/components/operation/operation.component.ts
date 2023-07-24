@@ -69,9 +69,8 @@ export class Operation<T> extends Component implements Validation<OperationSchem
       }
     })
 
-    inputWorker.on('completed', (job: Job, returnvalue: any) => {
-      job.remove();
-      console.log(`Operation ${job.id} - ${job.name} completed!`);
+    inputWorker.on('completed', async (job: Job, returnvalue: any) => {
+      await job.remove();
     });
   }
 

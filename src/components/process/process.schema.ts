@@ -10,6 +10,6 @@ export interface ProcessSchema {
   name: string
   type: "process"
   inbound: string,
-  outbound: string,
+  outbound?: string,
   components: Array<ProcessComponents>
 }
