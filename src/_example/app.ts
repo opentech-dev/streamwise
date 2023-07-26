@@ -1,7 +1,12 @@
 import { Streamwise } from "../index";
 import { ProcessSchema } from "../types";
 
-const app = new Streamwise<number>({
+type El = {
+  id: number,
+  el: number
+}
+
+const app = new Streamwise<El>({
   host: 'redis-do-user-9799822-0.b.db.ondigitalocean.com',
   port: 25061,
   username: 'default',
@@ -13,7 +18,7 @@ const app = new Streamwise<number>({
 });
 
 app.filter('GreaterThan', (data, criteria, resolve, reject) => {
-  if (data > criteria.filter) {
+  if (data.el > criteria.filter) {
     resolve(data)
   } else {
     reject(data)
@@ -21,13 +26,13 @@ app.filter('GreaterThan', (data, criteria, resolve, reject) => {
 });
 
 app.operation('log', (data, resolve, options) => {
-  console.log('LOG', data, options?.label );
+  console.log(`#${data.id} -> ${data.el} is ${options?.label}`);
   resolve(data);
 });
 
 const schema: ProcessSchema = {
   id: 1,
-  name: "ProcessNumbers",
+  name: "procesNr"+(new Date().getTime().toString(16)),
   type: "process",
   inbound: "PRC.1:$inbound",
   outbound: "PRC.1:$outbound",
@@ -41,7 +46,7 @@ const schema: ProcessSchema = {
       reject: "FL.2:$reject"
     },
     criteria: {
-      filter: 35
+      filter: 50
     }
   },{
     id: 3,
@@ -74,16 +79,36 @@ const schema: ProcessSchema = {
 }
 
 
-const arr: number[] = [10,20,30,40,50,60,70];
+const arr: El[] = [];
+
+for(let i = 0; i < 1000; i++) {
+  arr[i] = {
+    id: i,
+    el: Math.floor(Math.random() * 100)
+  }
+}
 
 const process = app.loadSchema(schema);
 
-process.inbound(arr.shift() as number);
+const part1 = arr.splice(0, 100);
+const resp = new Map();
+part1.forEach( (e:El) => resp.set(e.id, e.el))
 
-process.on('outbound', (nr: number) => {
-  console.log('OUTBOUND', nr);
+process.inbound(part1);
+
+let count = 0;
+process.on('outbound', (nr:El) => {
+  count +=1;
+  console.log(`#${count} outbound: ${nr.el} `);
+
+  resp.delete(nr.id);
+  console.log("resp size", resp.size)
+
+  if (resp.size < 5) {
+    console.log("missing items", resp);
+  }
   if (arr.length) {
-    process.inbound(arr.shift() as number);
+    process.inbound(arr.splice(0, 1))
   }
 })
 

@@ -22,7 +22,7 @@ yarn add @streamwise/core
 ## Getting Started
 Here's a simple example of how to use StreamWise:
 
-```
+```javascript
 import { Streamwise } from '@streamwise/core';
 
 // Your custom filter and operation functions
