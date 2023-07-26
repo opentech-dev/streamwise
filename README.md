@@ -296,7 +296,7 @@ ___
 
 ## Mergers
 
-Mergers are components in StreamWise that allow you to combine two or more channels into a single channel. They provide the capability to aggregate and consolidate data entities from multiple sources into one unified channel.
+Mergers are components in StreamWise that allow you to combine two or more channels into a single channel. They provide the capability to aggregate and consolidate data entities from multiple sources into one unified channel. Since Mergers don't require custom operation, mergers are defined directly in the schema.
 
 ### Schema
 
@@ -317,15 +317,13 @@ const app = new StreamWise({
   // Redis configuration
 });
 
-// Define custom Mergers
-app.merger('mergeTwo', {
-  inputs: ["FL.1:$resolve", "FL.2:$resolve"],
-  output: "MRG.1:$resolve",
-});
-
-app.merger('mergeThree', {
-  inputs: ["OP.1:$resolve", "OP.2:$resolve", "OP.3:$resolve"],
-  output: "MRG.2:$resolve",
+// Add a custom Filter
+app.filter('CustomFilter', (data, criteria, resolve, reject) => {
+  if (data > criteria.threshold) {
+    resolve(data); // Data passes the filter
+  } else {
+    reject(data); // Data does not meet the criteria
+  }
 });
 
 // Define a Schema for the Process
@@ -338,17 +336,23 @@ const schema = {
   components: [
     {
       id: 2,
-      type: "merger",
-      name: "mergeTwo",
-      inputs: ["OP.1:$resolve", "OP.2:$resolve"],
-      output: "MRG.1:$resolve",
+      type: "filter",
+      name: "CustomFilter",
+      input: "PRC.1:$inbound",
+      output: {
+        resolve: "FL.2:$resolve",
+        reject: "FL.2:$reject",
+      },
+      criteria: {
+        threshold: 50, // Example criteria: filter data greater than 50
+      },
     },
     {
       id: 3,
       type: "merger",
-      name: "mergeThree",
-      inputs: ["OP.3:$resolve", "OP.4:$resolve", "OP.5:$resolve"],
-      output: "MRG.2:$resolve",
+      name: "MergeFilterOutputs",
+      inputs: ["FL.2:$resolve", "FL.2:$reject"],
+      output: "MRG.3:$resolve",
     },
     // ... other components
   ],
@@ -361,7 +365,7 @@ const process = app.loadSchema(schema);
 process([10, 20, 30, 40, 50, 60]);
 ```
 
-In this example, two custom Mergers are defined: "`mergeTwo`" and "`mergeThree`". "`mergeTwo`" combines the data entities from two input channels "`OP.1:$resolve`" and "`OP.2:$resolve`" into a single channel "`MRG.1:$resolve`". Similarly, "`mergeThree`" combines the data entities from three input channels "`OP.3:$resolve`", "`OP.4:$resolve`", and "`OP.5:$resolve`" into a single channel "`MRG.2:$resolve`". By using Mergers, you can effectively consolidate data from multiple sources and streamline data processing within your StreamWise data pipeline.
+In this example, a Merger is defined: "`MergeFilterOutputs`". It combines the data entities from two input channels "`"FL.2:$resolve"`" and "`"FL.2:$reject"`" into a single channel "`MRG.3:$resolve`". By using Mergers, you can effectively consolidate data from multiple sources and streamline data processing within your StreamWise data pipeline.
 
 ___
 
