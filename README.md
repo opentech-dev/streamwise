@@ -114,9 +114,24 @@ const schema = {
 const process = app.loadSchema(schema);
 
 // Provide a list of DataEntities as input to the Process
-process([dataEntity1, dataEntity2, dataEntity3, /* ... */]);
+process.inbound([dataEntity1, dataEntity2, dataEntity3, /* ... */]);
 
 ```
+
+### Events
+
+```javascript
+
+process.on("failed", (error, job) => {
+  // Handle errors here
+});
+
+process.on("outbound", (data: T) => {
+  // Handle outbound data here
+});
+
+```
+
 In this example, a custom Process named "`DataProcessingPipeline`" is defined. It consists of a series of interconnected components (**Filters**, **Operations**, and **Mergers**) that process data entities as they flow through the pipeline. The Process takes an array of DataEntities as input and processes them accordingly, producing the final output through the outbound channel "`PRC.1:$outbound`". By defining and configuring components within the Process, you can design complex data processing workflows tailored to your specific application requirements.
 
 ___
