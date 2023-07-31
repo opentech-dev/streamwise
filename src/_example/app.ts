@@ -1,12 +1,8 @@
 import { Streamwise } from "../index";
 import { ProcessSchema } from "../types";
 
-type El = {
-  id: number,
-  el: number
-}
 
-const app = new Streamwise<El>({
+const app = new Streamwise<number>({
   host: 'redis-do-user-9799822-0.b.db.ondigitalocean.com',
   port: 25061,
   username: 'default',
@@ -18,7 +14,7 @@ const app = new Streamwise<El>({
 });
 
 app.filter('GreaterThan', (data, criteria, resolve, reject) => {
-  if (data.el > criteria.filter) {
+  if (data > criteria.filter) {
     resolve(data)
   } else {
     reject(data)
@@ -26,13 +22,13 @@ app.filter('GreaterThan', (data, criteria, resolve, reject) => {
 });
 
 app.operation('log', (data, resolve, options) => {
-  console.log(`#${data.id} -> ${data.el} is ${options?.label}`);
+  console.log(`# ${data} is ${options?.label}`);
   resolve(data);
 });
 
 const schema: ProcessSchema = {
   id: 1,
-  name: "procesNr"+(new Date().getTime().toString(16)),
+  name: "procesNumbers",
   type: "process",
   inbound: "PRC.1:$inbound",
   outbound: "PRC.1:$outbound",
@@ -78,39 +74,18 @@ const schema: ProcessSchema = {
   }]
 }
 
-
-const arr: El[] = [];
-
-for(let i = 0; i < 1000; i++) {
-  arr[i] = {
-    id: i,
-    el: Math.floor(Math.random() * 100)
-  }
-}
-
 const process = app.loadSchema(schema);
 
-const part1 = arr.splice(0, 100);
-const resp = new Map();
-part1.forEach( (e:El) => resp.set(e.id, e.el))
+process.inbound([10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
 
-process.inbound(part1);
-
-let count = 0;
-process.on('outbound', (nr:El) => {
-  count +=1;
-  console.log(`#${count} outbound: ${nr.el} `);
-
-  resp.delete(nr.id);
-  console.log("resp size", resp.size)
-
-  if (resp.size < 5) {
-    console.log("missing items", resp);
-  }
-  if (arr.length) {
-    process.inbound(arr.splice(0, 1))
-  }
+process.on('outbound', (data: number) => {
+  console.log(`outbound: ${data} `);
 })
 
+// process.on('progress', (step, data, progress) => {
+//   console.log("progress", step, data, progress)
+// })
 
-
+process.on('failed', (error: Error) => {
+  console.log("failed", error)
+})

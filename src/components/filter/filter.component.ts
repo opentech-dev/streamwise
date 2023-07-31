@@ -4,9 +4,11 @@ import { FilterSchema, FilterOutput } from "./filter.schema";
 import { DriverConfig } from "@app/types/connection";
 import { Component } from "@app/core/component";
 import * as schemaJson from './filter.schema.json';
-import { FilterFunction, SchemaType } from "@app/types";
+import { FilterFunction, ProcessEventType, SchemaType } from "@app/types";
 import { Validation } from "@app/types/component";
 import { validator } from './fillter.validator'
+import { EventEmitter } from "stream";
+import TypedEventEmitter from "typed-emitter";
 
 export class Filter<T> extends Component implements Validation<FilterSchema> {
   id: number | string;
@@ -18,8 +20,9 @@ export class Filter<T> extends Component implements Validation<FilterSchema> {
   outputChannels: FilterOutput;
   executor: FilterFunction<T>;  
   schema: FilterSchema;
+  processEvents: TypedEventEmitter<ProcessEventType<T>>;
 
-  constructor(schema: FilterSchema, resources: Resources<T>, driverConfig: DriverConfig) {
+  constructor(schema: FilterSchema, resources: Resources<T>, driverConfig: DriverConfig, processEvents: TypedEventEmitter<ProcessEventType<T>>) {
     super(driverConfig)
     this.validate(schema);
     this.id = schema.id;
@@ -28,6 +31,7 @@ export class Filter<T> extends Component implements Validation<FilterSchema> {
     this.outputChannels = schema.output;
     this.criteria = schema.criteria;
     this.schema = schema;
+    this.processEvents = processEvents;
 
     const executor = resources.get('filter', this.name) as FilterFunction<T>;
     if (!executor) {
@@ -84,6 +88,15 @@ export class Filter<T> extends Component implements Validation<FilterSchema> {
 
     inputWorker.on('completed', async (job: Job, returnvalue: any) => {
       await job.remove();
+    });
+
+    inputWorker.on('progress', (job: Job, progress: number | object) => {
+      const data = job.data as T;
+      this.processEvents.emit('progress', this.name, data, progress, job)
+    });
+
+    inputWorker.on('failed', (job: Job|undefined, error: Error) => {
+      this.processEvents.emit('failed', error, job as Job)
     });
   }
 

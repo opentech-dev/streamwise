@@ -9,8 +9,9 @@ import { Merger } from "../merger/merger.component";
 import { Component } from "@app/core/component";
 import * as schemaJson from './process.schema.json';
 import { ProcessTreeValidator } from '@app/components/process/process.validator'
-import { ProcessEvent } from './process.types';
+import { ProcessEvent, ProcessEventType } from './process.types';
 import * as EventEmmiter from 'events';
+import TypedEmitter from "typed-emitter"
 
 export class Process<T> extends Component {
   private id: number | string;
@@ -21,8 +22,8 @@ export class Process<T> extends Component {
   private inboundQ: Queue;
   private outboundChannel?: string;
   private outboundWorker?: Worker;
-  private eventEmmiter = new EventEmmiter();
-  private components: Array<Filter<T> | Operation<T> | Merger> = []
+  private processEvents = new EventEmmiter() as TypedEmitter<ProcessEventType<T>>;
+  private components: Array<Filter<T> | Operation<T> | Merger<T>> = []
 
   constructor(schema: ProcessSchema, resources: Resources<T>, driverConfig: DriverConfig) {
     // const prefix = schema.name
@@ -41,13 +42,13 @@ export class Process<T> extends Component {
     components.forEach(componentSchema => {
       switch (componentSchema.type) {
         case "filter":
-          this.components.push(new Filter<T>(componentSchema, resources, this.driverConfig))
+          this.components.push(new Filter<T>(componentSchema, resources, this.driverConfig, this.processEvents))
           break;
         case "operation":
-          this.components.push(new Operation<T>(componentSchema, resources, this.driverConfig))
+          this.components.push(new Operation<T>(componentSchema, resources, this.driverConfig, this.processEvents))
           break;
         case "merger":
-          this.components.push(new Merger(componentSchema, this.driverConfig))
+          this.components.push(new Merger<T>(componentSchema, this.driverConfig, this.processEvents))
           break;
         default:
           throw new Error(`Uknown Component type "${JSON.stringify(componentSchema, null, 2)}"`)
@@ -59,7 +60,7 @@ export class Process<T> extends Component {
     if (!this.outboundChannel) return;
     this.outboundWorker = this.createWorker('outbound', this.outboundChannel, async (job: Job) => {
       const data = job.data as T;
-      this.eventEmmiter.emit("outbound", data);
+      this.processEvents.emit("outbound", data);
       return data;
     })
 
@@ -92,8 +93,8 @@ export class Process<T> extends Component {
     }
   }
 
-  public on(event: ProcessEvent, callback: (...args: any[]) => void) {
-    this.eventEmmiter.on(event, callback)
+  public on(event: ProcessEvent, callback: ProcessEventType<T>[ProcessEvent]) {
+    this.processEvents.on(event, callback)
     return this;
   }
 

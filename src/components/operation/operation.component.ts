@@ -1,5 +1,5 @@
 import { Resources } from "@app/core/resources";
-import { KeyVal, SchemaType, OperationFunction } from "@app/types";
+import { KeyVal, SchemaType, OperationFunction, ProcessEventType } from "@app/types";
 import { DriverConfig } from "@app/types/connection";
 import { Job, Queue } from "bullmq";
 import { OperationSchema } from "./operation.schema";
@@ -7,6 +7,7 @@ import { Component } from "@app/core/component";
 import * as schemaJson from './operation.schema.json'
 import { Validation } from "@app/types/component";
 import { validator } from "./operation.validator";
+import TypedEventEmitter from "typed-emitter";
 
 export class Operation<T> extends Component implements Validation<OperationSchema> {
   id: number | string;
@@ -18,8 +19,9 @@ export class Operation<T> extends Component implements Validation<OperationSchem
   options?: KeyVal;
   executor: OperationFunction<T>;
   schema: OperationSchema;
+  processEvents: TypedEventEmitter<ProcessEventType<T>>;
 
-  constructor(schema: OperationSchema, resources: Resources<T>, driverConfig: DriverConfig) {
+  constructor(schema: OperationSchema, resources: Resources<T>, driverConfig: DriverConfig, processEvents: TypedEventEmitter<ProcessEventType<T>>) {
     super(driverConfig)
     
     // Validate schema and schema logic
@@ -31,6 +33,7 @@ export class Operation<T> extends Component implements Validation<OperationSchem
     this.outputChannel = schema.output;
     this.options = schema.options;
     this.schema = schema;
+    this.processEvents = processEvents;
 
     const executor = resources.get('operation', this.name) as OperationFunction<T>;
     if (!executor) {
@@ -72,6 +75,16 @@ export class Operation<T> extends Component implements Validation<OperationSchem
     inputWorker.on('completed', async (job: Job, returnvalue: any) => {
       await job.remove();
     });
+
+    inputWorker.on('progress', (job: Job, progress: number | object) => {
+      const data = job.data as T;
+      this.processEvents.emit('progress', this.name, data, progress, job)
+    });
+
+    inputWorker.on('failed', (job: Job|undefined, error: Error) => {
+      this.processEvents.emit('failed', error, job as Job)
+    });
+
   }
 
   validate(schema: OperationSchema) {
