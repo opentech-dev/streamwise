@@ -4,12 +4,12 @@ import { MergerSchema } from './merger.schema';
 import { DriverConfig } from "@app/types/connection";
 import { Job } from "bullmq";
 import * as schemaJson from './merger.schema.json';
-import { Validation } from "@app/types/component";
+import { Validation, componentId } from "@app/types/component";
 import { validator } from "./merger.validator";
 import TypedEventEmitter from "typed-emitter";
 
 export class Merger<T> extends Component implements Validation<MergerSchema> {
-  id: number | string;
+  id: componentId;
   name: string;
   code: string = "MRG";
   type: SchemaType = 'merger';
@@ -42,13 +42,10 @@ export class Merger<T> extends Component implements Validation<MergerSchema> {
 
     this.inputChannels.map((channel, i) => {
       const worker = this.createWorker(`input-${i}`, channel, listener);
-      worker.on('completed', async (job: Job, returnvalue: any) => {
-        await job.remove();
-      });
-
-      worker.on('progress', (job: Job, progress: number | object) => {
+      worker.on('completed', async (job: Job) => {
         const data = job.data as T;
-        this.processEvents.emit('progress', this.name, data, progress, job)
+        this.processEvents.emit('progress', this.id, data)
+        await job.remove();
       });
 
       worker.on('failed', (job: Job|undefined, error: Error) => {

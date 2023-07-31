@@ -130,6 +130,10 @@ process.on("outbound", (data: T) => {
   // Handle outbound data here
 });
 
+process.on("progress", (componentId: number|string, data: T) => {
+  // Fired when a component resolves a data entity
+});
+
 ```
 
 In this example, a custom Process named "`DataProcessingPipeline`" is defined. It consists of a series of interconnected components (**Filters**, **Operations**, and **Mergers**) that process data entities as they flow through the pipeline. The Process takes an array of DataEntities as input and processes them accordingly, producing the final output through the outbound channel "`PRC.1:$outbound`". By defining and configuring components within the Process, you can design complex data processing workflows tailored to your specific application requirements.

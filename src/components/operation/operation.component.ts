@@ -5,12 +5,12 @@ import { Job, Queue } from "bullmq";
 import { OperationSchema } from "./operation.schema";
 import { Component } from "@app/core/component";
 import * as schemaJson from './operation.schema.json'
-import { Validation } from "@app/types/component";
+import { Validation, componentId } from "@app/types/component";
 import { validator } from "./operation.validator";
 import TypedEventEmitter from "typed-emitter";
 
 export class Operation<T> extends Component implements Validation<OperationSchema> {
-  id: number | string;
+  id: componentId;
   name: string;
   code: string = "OP";
   type: SchemaType = 'operation';
@@ -72,13 +72,10 @@ export class Operation<T> extends Component implements Validation<OperationSchem
       }
     })
 
-    inputWorker.on('completed', async (job: Job, returnvalue: any) => {
-      await job.remove();
-    });
-
-    inputWorker.on('progress', (job: Job, progress: number | object) => {
+    inputWorker.on('completed', async (job: Job) => {
       const data = job.data as T;
-      this.processEvents.emit('progress', this.name, data, progress, job)
+      this.processEvents.emit('progress', this.id, data)
+      await job.remove();
     });
 
     inputWorker.on('failed', (job: Job|undefined, error: Error) => {

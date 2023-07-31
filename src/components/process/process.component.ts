@@ -12,9 +12,10 @@ import { ProcessTreeValidator } from '@app/components/process/process.validator'
 import { ProcessEvent, ProcessEventType } from './process.types';
 import * as EventEmmiter from 'events';
 import TypedEmitter from "typed-emitter"
+import { componentId } from "@app/types/component";
 
 export class Process<T> extends Component {
-  private id: number | string;
+  private id: componentId;
   private name: string;
   private code: string = "PRC"
   private type: SchemaType = 'process'
@@ -64,7 +65,7 @@ export class Process<T> extends Component {
       return data;
     })
 
-    this.outboundWorker.on('completed', async (job: Job, returnvalue: any) => {
+    this.outboundWorker.on('completed', async (job: Job) => {
       await job.remove();
     });
   }
