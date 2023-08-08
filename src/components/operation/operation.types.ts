@@ -1,2 +1,2 @@
 export type KeyVal = {[key: string]: any}
-export type OperationFunction<T> = (data: T, resolve: Function, options?: KeyVal) => void;
+export type OperationFunction<T> = (data: T, resolve: (...args:any[])=>void, options?: KeyVal) => void;
