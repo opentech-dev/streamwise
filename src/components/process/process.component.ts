@@ -25,6 +25,7 @@ export class Process<T> extends Component {
   private outboundWorker?: Worker;
   private processEvents = new EventEmmiter() as TypedEmitter<ProcessEventType<T>>;
   private components: Array<Filter<T> | Operation<T> | Merger<T>> = []
+  private isDestroyed = false;
 
   constructor(schema: ProcessSchema, resources: Resources<T>, driverConfig: DriverConfig) {
     // const prefix = schema.name
@@ -82,6 +83,10 @@ export class Process<T> extends Component {
   /** PUBLIC METHODS */
   
   public async inbound(data: T[] | T) {
+    if (this.isDestroyed) {
+      throw new Error(`Cannot add data to destroyed process "${this.name}" id: ${this.id}`);
+    } 
+
     const name = "inbound";
     if (Array.isArray(data)) {
       const bulk = data.map(d => ({
@@ -92,6 +97,12 @@ export class Process<T> extends Component {
     } else {
       await this.inboundQ.add(name, data);
     }
+  }
+
+  public close() {
+    this.processEvents.emit('_close');
+    this.inboundQ.close();
+    this.isDestroyed = true;
   }
 
   public on(event: ProcessEvent, callback: ProcessEventType<T>[ProcessEvent]) {

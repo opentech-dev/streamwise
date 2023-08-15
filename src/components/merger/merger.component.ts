@@ -36,6 +36,10 @@ export class Merger<T> extends Component implements Validation<MergerSchema> {
   createConnections() {
     const outputQ = this.createQ('outputQ', this.outputChannel);
 
+    this.processEvents.once('_close', () => {
+      if (outputQ) outputQ.close();
+    })
+
     const listener = async (job: Job) => {
       await outputQ.add(`resolved`, job.data)
     }

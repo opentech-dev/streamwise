@@ -49,8 +49,14 @@ export class Operation<T> extends Component implements Validation<OperationSchem
 
     if (this.outputChannel) {
       outputQ = this.createQ('outputQ', this.outputChannel);
+
+      this.processEvents.once('_close', () => {
+        outputQ.close();
+      })
     }
 
+
+    
     const inputWorker = this.createWorker('input', this.inputChannel, async (job: Job) => {
       let resolvedData;
 

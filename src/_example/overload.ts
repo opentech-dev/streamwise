@@ -75,28 +75,24 @@ const schema: ProcessSchema = {
 }
 
 const process = app.loadSchema(schema);
+let count = 0;
+process.on('outbound', (data: number) => {
+  count++;
+  console.log(`#${count} outbound: ${data}`);
+})
+
+process.on('progress', (id: string| number, data: number) => {
+  // console.log("progress", id, data)
+})
+
+process.on('failed', (error: Error) => {
+  // console.log("failed", error)
+})
 
 
+const arr = [];
+for (let i = 0; i < 100; i++) {
+  arr.push(Math.floor(Math.random() * 100))
+}
 
-// process.on('outbound', (data: number) => {
-//   console.log(`outbound: ${data} `);
-// })
-
-// process.on('progress', (id: string| number, data: number) => {
-//   console.log("progress", id, data)
-// })
-
-// process.on('failed', (error: Error) => {
-//   console.log("failed", error)
-// })
-
-setInterval(() => {
-  const val = Math.floor(Math.random() * 100)
-  console.log("inbound", val)
-  process.inbound(val);
-}, 1000);
-
-setTimeout(() => {
-  console.log('---------destroying process');
-  process.close();
-}, 5000);
+process.inbound(arr);

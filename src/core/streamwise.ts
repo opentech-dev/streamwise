@@ -26,7 +26,7 @@ export class Streamwise<T> {
   }
 
   loadSchema(schema: ProcessSchema): Process<T> {
-    const prefix = schema.name;
+    const prefix = schema.id + '.' + schema.name;
     const process = new Process<T>(schema, this.resources, {...this.driverConfig, prefix });
     return process;
   }

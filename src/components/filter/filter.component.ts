@@ -53,6 +53,11 @@ export class Filter<T> extends Component implements Validation<FilterSchema> {
       rejectQ = this.createQ('reject', this.outputChannels.reject)
     }
 
+    this.processEvents.once('_close', () => {
+      if (passQ) passQ.close();
+      if (rejectQ) rejectQ.close();
+    })
+
     const inputWorker = this.createWorker('input', this.inputChannel, async (job: Job) => {
       let invocation = false;
       let resolvedData, rejectedData;
