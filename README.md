@@ -85,7 +85,20 @@ The Process component follows the JSON schema defined as `ProcessSchema`. Here a
 *   `type` (string, const: "process", required): Specifies the component type as "process."
 *   `inbound` (string, required): The channel where data entities enter the Process.
 *   `outbound` (string, required): The channel where processed data entities exit the Process.
-*   `components` (ComponentsSchema[], required): An array of components (Filters, Operations, or Mergers) that form the Process.
+*   `components` (ComponentsSchema[], required): An array of components (Filters, Operations, or Mergers) that form the 
+Process.
+*   `defaultQueueOptions` (qOptions, optional): default Queue options (see QueueOptions type Bullmq), will be inherited by all Queues:
+```
+  defaultQueueOptions: {
+     defaultJobOptions: {
+       attempts: 3,
+       backoff: {
+         type: 'exponential',
+         delay: 2000,
+       },
+     }
+  }
+```
 
 ### Example
 
@@ -105,6 +118,15 @@ const schema = {
   type: "process",
   inbound: "PRC.1:$inbound",
   outbound: "PRC.1:$outbound",
+  defautQueueOptions: {
+     defaultJobOptions: {
+       attempts: 3,
+       backoff: {
+         type: 'exponential',
+         delay: 2000,
+       },
+     }
+  }
   components: [
     // Define the components and their interconnections here
   ],
