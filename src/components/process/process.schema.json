@@ -185,6 +185,39 @@
           "items": {
             "$ref": "#/definitions/ProcessComponents"
           }
+        },
+        "defaultQueueOptions": {
+          "type": "object",
+          "properties": {
+            "defaultJobOptions": {
+              "$ref": "#/definitions/Bull.JobOptions"
+            },
+            "streams": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "object",
+                  "properties": {
+                    "maxLen": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "maxLen"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "events"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "defaultJobOptions"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -195,6 +228,360 @@
         "components"
       ],
       "additionalProperties": false
+    },
+    "Bull.JobOptions": {
+      "type": "object",
+      "properties": {
+        "priority": {
+          "type": "number",
+          "description": "Optional priority value. ranges from 1 (highest priority) to MAX_INT  (lowest priority). Note that using priorities has a slight impact on performance, so do not use it if not required"
+        },
+        "delay": {
+          "type": "number",
+          "description": "An amount of miliseconds to wait until this job can be processed. Note that for accurate delays, both server and clients should have their clocks synchronized. [optional]"
+        },
+        "attempts": {
+          "type": "number",
+          "description": "The total number of attempts to try the job until it completes"
+        },
+        "repeat": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "The key for the repeatable job metadata in Redis."
+                },
+                "tz": {
+                  "type": "string",
+                  "description": "Timezone"
+                },
+                "endDate": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "description": "End date when the repeat job should stop repeating"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Number of times the job should repeat at max."
+                },
+                "count": {
+                  "type": "number",
+                  "description": "The start value for the repeat iteration count."
+                },
+                "cron": {
+                  "type": "string",
+                  "description": "Cron pattern specifying when the job should execute"
+                },
+                "startDate": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "description": "Start date when the repeat job should start repeating (only with cron)."
+                }
+              },
+              "required": [
+                "cron"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "The key for the repeatable job metadata in Redis."
+                },
+                "tz": {
+                  "type": "string",
+                  "description": "Timezone"
+                },
+                "endDate": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "description": "End date when the repeat job should stop repeating"
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Number of times the job should repeat at max."
+                },
+                "count": {
+                  "type": "number",
+                  "description": "The start value for the repeat iteration count."
+                },
+                "every": {
+                  "type": "number",
+                  "description": "Repeat every millis (cron setting cannot be used together with this setting.)"
+                }
+              },
+              "required": [
+                "every"
+              ]
+            }
+          ],
+          "description": "Repeat job according to a cron specification"
+        },
+        "backoff": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/Bull.BackoffOptions"
+            }
+          ],
+          "description": "Backoff setting for automatic retries if the job fails"
+        },
+        "lifo": {
+          "type": "boolean",
+          "description": "A boolean which, if true, adds the job to the right of the queue instead of the left (default false)"
+        },
+        "timeout": {
+          "type": "number",
+          "description": "The number of milliseconds after which the job should be fail with a timeout error"
+        },
+        "jobId": {
+          "$ref": "#/definitions/Bull.JobId",
+          "description": "Override the job ID - by default, the job ID is a unique integer, but you can use this setting to override it. If you use this option, it is up to you to ensure the jobId is unique. If you attempt to add a job with an id that already exists, it will not be added."
+        },
+        "removeOnComplete": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/Bull.KeepJobsOptions"
+            }
+          ],
+          "description": "A boolean which, if true, removes the job when it successfully completes. When a number, it specifies the amount of jobs to keep. Default behavior is to keep the job in the completed set. See KeepJobsOptions if using that interface instead."
+        },
+        "removeOnFail": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/Bull.KeepJobsOptions"
+            }
+          ],
+          "description": "A boolean which, if true, removes the job when it fails after all attempts. When a number, it specifies the amount of jobs to keep. Default behavior is to keep the job in the failed set. See KeepJobsOptions if using that interface instead."
+        },
+        "stackTraceLimit": {
+          "type": "number",
+          "description": "Limits the amount of stack trace lines that will be recorded in the stacktrace."
+        },
+        "preventParsingData": {
+          "type": "boolean",
+          "description": "Prevents JSON data from being parsed."
+        }
+      },
+      "additionalProperties": false
+    },
+    "Bull.CronRepeatOptions": {
+      "type": "object",
+      "properties": {
+        "tz": {
+          "type": "string",
+          "description": "Timezone"
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "End date when the repeat job should stop repeating"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of times the job should repeat at max."
+        },
+        "count": {
+          "type": "number",
+          "description": "The start value for the repeat iteration count."
+        },
+        "cron": {
+          "type": "string",
+          "description": "Cron pattern specifying when the job should execute"
+        },
+        "startDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Start date when the repeat job should start repeating (only with cron)."
+        }
+      },
+      "required": [
+        "cron"
+      ],
+      "additionalProperties": false
+    },
+    "Bull.RepeatOptions": {
+      "type": "object",
+      "properties": {
+        "tz": {
+          "type": "string",
+          "description": "Timezone"
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "End date when the repeat job should stop repeating"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of times the job should repeat at max."
+        },
+        "count": {
+          "type": "number",
+          "description": "The start value for the repeat iteration count."
+        }
+      },
+      "additionalProperties": false
+    },
+    "Bull.EveryRepeatOptions": {
+      "type": "object",
+      "properties": {
+        "tz": {
+          "type": "string",
+          "description": "Timezone"
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "End date when the repeat job should stop repeating"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of times the job should repeat at max."
+        },
+        "count": {
+          "type": "number",
+          "description": "The start value for the repeat iteration count."
+        },
+        "every": {
+          "type": "number",
+          "description": "Repeat every millis (cron setting cannot be used together with this setting.)"
+        }
+      },
+      "required": [
+        "every"
+      ],
+      "additionalProperties": false
+    },
+    "Bull.BackoffOptions": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Backoff type, which can be either `fixed` or `exponential`"
+        },
+        "delay": {
+          "type": "number",
+          "description": "Backoff delay, in milliseconds"
+        },
+        "options": {
+          "description": "Options for custom strategies"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "Bull.JobId": {
+      "type": [
+        "number",
+        "string"
+      ]
+    },
+    "Bull.KeepJobsOptions": {
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "number",
+          "description": "Maximum age in *seconds* for job to be kept."
+        },
+        "count": {
+          "type": "number",
+          "description": "Maximum count of jobs to be kept."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Specify which jobs to keep after finishing processing this job. If both age and count are specified, then the jobs kept will be the ones that satisfies both properties."
     }
   }
 }

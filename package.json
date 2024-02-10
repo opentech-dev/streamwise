@@ -1,6 +1,6 @@
 {
   "name": "@streamwise/core",
-  "version": "0.0.30",
+  "version": "0.0.40",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
