@@ -17,13 +17,11 @@ export abstract class BullWrapper {
   }
 
   createQ(queId: string, name: string, qOptions?: QueueOptions): Queue {
-    // configure connection
-    const driverConfig = this.driverConfig as unknown as typeof RedisConnection;
-
     // configure default options
     // TODO :: include defaultQueOptions support for each component
     const opts =  {...this.defaultQueOptions, ...qOptions};
-    const q = new Queue(name, opts, driverConfig)
+    
+    const q = new Queue(name, opts)
     console.log('Q --', name);
     this.queues.set(queId, q);
     return q;
