@@ -29,7 +29,8 @@ export class Process<T> extends Component {
 
   constructor(schema: ProcessSchema, resources: Resources<T>, driverConfig: DriverConfig) {
     // const prefix = schema.name
-    super( {...driverConfig });
+    const defautlQueueOptions = schema.defaultQueueOptions
+    super( {...driverConfig }, defautlQueueOptions);
     this.validate(schema)
     this.id = schema.id;
     this.name = schema.name;
@@ -44,13 +45,13 @@ export class Process<T> extends Component {
     components.forEach(componentSchema => {
       switch (componentSchema.type) {
         case "filter":
-          this.components.push(new Filter<T>(componentSchema, resources, this.driverConfig, this.processEvents))
+          this.components.push(new Filter<T>(componentSchema, resources, this.driverConfig, this.processEvents, defautlQueueOptions))
           break;
         case "operation":
-          this.components.push(new Operation<T>(componentSchema, resources, this.driverConfig, this.processEvents))
+          this.components.push(new Operation<T>(componentSchema, resources, this.driverConfig, this.processEvents, defautlQueueOptions))
           break;
         case "merger":
-          this.components.push(new Merger<T>(componentSchema, this.driverConfig, this.processEvents))
+          this.components.push(new Merger<T>(componentSchema, this.driverConfig, this.processEvents, defautlQueueOptions))
           break;
         default:
           throw new Error(`Uknown Component type "${JSON.stringify(componentSchema, null, 2)}"`)

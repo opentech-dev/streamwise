@@ -1,3 +1,4 @@
+import { JobOptions } from 'bull';
 import { FilterFunction, OperationFunction } from '../components/components.types';
 export { DriverConfig } from './connection';
 
@@ -37,3 +38,12 @@ export type ComponentConfig<T> = {
 export type ComponentsLib<T> = Array<ComponentConfig<T>>
 
 /*** */
+
+export interface qOptions {
+  defaultJobOptions : JobOptions
+  streams?: {
+    events: {
+        maxLen: number;
+    };
+  };
+}

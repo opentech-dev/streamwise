@@ -1,6 +1,7 @@
 import { Processor, Queue, QueueOptions, RedisConnection, Worker } from "bullmq";
 import { DriverConfig } from "@app/types/connection";
 import { JobOptions } from "bull";
+import { qOptions } from "@app/types";
 
 export abstract class BullWrapper {
   public driverConfig: DriverConfig;
@@ -8,7 +9,7 @@ export abstract class BullWrapper {
   public workers: Map<string, Worker> = new Map()
   private defaultQueOptions: QueueOptions; 
 
-  constructor(driverConfig: DriverConfig, defaultQueueOptions?: QueueOptions) {
+  constructor(driverConfig: DriverConfig, defaultQueueOptions?: qOptions) {
     this.driverConfig = driverConfig;
     this.defaultQueOptions = {
       ...defaultQueueOptions,
@@ -20,7 +21,7 @@ export abstract class BullWrapper {
     // configure default options
     // TODO :: include defaultQueOptions support for each component
     const opts =  {...this.defaultQueOptions, ...qOptions};
-    
+    console.log('new q',opts);
     const q = new Queue(name, opts)
     console.log('Q --', name);
     this.queues.set(queId, q);

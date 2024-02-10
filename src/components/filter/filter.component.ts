@@ -4,7 +4,7 @@ import { FilterSchema, FilterOutput } from "./filter.schema";
 import { DriverConfig } from "@app/types/connection";
 import { Component } from "@app/core/component";
 import * as schemaJson from './filter.schema.json';
-import { FilterFunction, ProcessEventType, SchemaType } from "@app/types";
+import { FilterFunction, ProcessEventType, SchemaType, qOptions } from "@app/types";
 import { Validation, componentId } from "@app/types/component";
 import { validator } from './fillter.validator'
 import TypedEventEmitter from "typed-emitter";
@@ -21,8 +21,14 @@ export class Filter<T> extends Component implements Validation<FilterSchema> {
   schema: FilterSchema;
   processEvents: TypedEventEmitter<ProcessEventType<T>>;
 
-  constructor(schema: FilterSchema, resources: Resources<T>, driverConfig: DriverConfig, processEvents: TypedEventEmitter<ProcessEventType<T>>) {
-    super(driverConfig)
+  constructor(
+    schema: FilterSchema, 
+    resources: Resources<T>, 
+    driverConfig: DriverConfig, 
+    processEvents: TypedEventEmitter<ProcessEventType<T>>,
+    defaultQueueOptions?: qOptions
+  ) {
+    super(driverConfig, defaultQueueOptions)
     this.validate(schema);
     this.id = schema.id;
     this.name = schema.name;

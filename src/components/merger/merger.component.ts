@@ -1,5 +1,5 @@
 import { Component } from "@app/core/component";
-import { ProcessEventType, SchemaType } from "@app/types";
+import { ProcessEventType, SchemaType, qOptions } from "@app/types";
 import { MergerSchema } from './merger.schema';
 import { DriverConfig } from "@app/types/connection";
 import { Job } from "bullmq";
@@ -18,8 +18,13 @@ export class Merger<T> extends Component implements Validation<MergerSchema> {
   schema: MergerSchema;
   processEvents: TypedEventEmitter<ProcessEventType<T>>;
 
-  constructor(schema: MergerSchema, driverConfig: DriverConfig, processEvents: TypedEventEmitter<ProcessEventType<T>>) {
-    super(driverConfig)
+  constructor(
+    schema: MergerSchema, 
+    driverConfig: DriverConfig, 
+    processEvents: TypedEventEmitter<ProcessEventType<T>>,
+    defaultQueueOptions?: qOptions
+  ) {
+    super(driverConfig, defaultQueueOptions)
     // validate schema and schema logic
     this.validate(schema)
 

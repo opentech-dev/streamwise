@@ -1,5 +1,5 @@
 import { Resources } from "@app/core/resources";
-import { KeyVal, SchemaType, OperationFunction, ProcessEventType } from "@app/types";
+import { KeyVal, SchemaType, OperationFunction, ProcessEventType, qOptions } from "@app/types";
 import { DriverConfig } from "@app/types/connection";
 import { Job, Queue } from "bullmq";
 import { OperationSchema } from "./operation.schema";
@@ -21,8 +21,14 @@ export class Operation<T> extends Component implements Validation<OperationSchem
   schema: OperationSchema;
   processEvents: TypedEventEmitter<ProcessEventType<T>>;
 
-  constructor(schema: OperationSchema, resources: Resources<T>, driverConfig: DriverConfig, processEvents: TypedEventEmitter<ProcessEventType<T>>) {
-    super(driverConfig)
+  constructor(
+    schema: OperationSchema, 
+    resources: Resources<T>, 
+    driverConfig: DriverConfig, 
+    processEvents: TypedEventEmitter<ProcessEventType<T>>,
+    defaultQueueOptions?: qOptions
+  ) {
+    super(driverConfig, defaultQueueOptions)
     
     // Validate schema and schema logic
     this.validate(schema)
