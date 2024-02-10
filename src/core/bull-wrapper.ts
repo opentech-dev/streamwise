@@ -6,20 +6,13 @@ export abstract class BullWrapper {
   public driverConfig: DriverConfig;
   public queues: Map<string, Queue> = new Map()
   public workers: Map<string, Worker> = new Map()
-  private defaultQueOptions: QueueOptions = {
-    // defaultJobOptions: {
-    //   attempts: 3,
-    //   backoff: {
-    //     type: 'exponential',
-    //     delay: 2000,
-    //   },
-    // }
-  }
+  private defaultQueOptions: QueueOptions; 
 
   constructor(driverConfig: DriverConfig, defaultQueueOptions?: QueueOptions) {
     this.driverConfig = driverConfig;
-    if (defaultQueueOptions) {
-      this.defaultQueOptions = defaultQueueOptions
+    this.defaultQueOptions = {
+      ...defaultQueueOptions,
+      ...driverConfig
     }
   }
 
@@ -29,8 +22,7 @@ export abstract class BullWrapper {
 
     // configure default options
     // TODO :: include defaultQueOptions support for each component
-    const opts =  qOptions || this.defaultQueOptions;
-
+    const opts =  {...this.defaultQueOptions, ...qOptions};
     const q = new Queue(name, opts, driverConfig)
     console.log('Q --', name);
     this.queues.set(queId, q);
